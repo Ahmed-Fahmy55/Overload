@@ -51,6 +51,9 @@ namespace Deadball.AI
         [SerializeField] RallyHeat _heat;
 
         [Title("Runtime"), ShowInInspector, ReadOnly]
+        /// <summary>The tier this runner is playing at (13.3). Read-only: the roster owns the choice.</summary>
+        public AiProfile Profile => _profile;
+
         public AiState State { get; private set; } = AiState.Hunt;
 
         [ShowInInspector, ReadOnly]

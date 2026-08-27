@@ -25,6 +25,9 @@ namespace Deadball.HUD
         [Title("References")]
         [Required, SerializeField] MatchSettings _settings;
 
+        [Tooltip("Title, Solo setup, Versus join. Index 0 is the screen the game opens on.")]
+        [SerializeField] GameObject[] _panels;
+
         [Title("Difficulty Tiers", "13.3 - one AI, three profiles")]
         [SerializeField] AiProfile[] _tiers;
 
@@ -43,6 +46,40 @@ namespace Deadball.HUD
             // Whatever the menu last chose is re-applied so the panels and the asset agree.
             SelectArena(SelectedArena);
             SelectTier(SelectedTier);
+            ShowPanel(0);
+        }
+
+        /// <summary>
+        /// Switches screens by activation rather than through Heat's PanelManager.
+        /// </summary>
+        /// <remarks>
+        /// PanelManager drives an Animator per panel, which is more machinery than five static
+        /// screens need - and Heat ships no assembly definition, so referencing its types from this
+        /// assembly is not possible anyway. The Heat buttons and selectors still do all the visible
+        /// work; only the switching is ours.
+        /// </remarks>
+        public void ShowPanel(int index)
+        {
+            if (_panels == null) return;
+
+            for (int i = 0; i < _panels.Length; i++)
+            {
+                if (_panels[i] != null) _panels[i].SetActive(i == index);
+            }
+        }
+
+        public void ShowTitle() => ShowPanel(0);
+
+        public void ShowSoloSetup()
+        {
+            SetModeSolo();
+            ShowPanel(1);
+        }
+
+        public void ShowVersusJoin()
+        {
+            SetModeVersus();
+            ShowPanel(2);
         }
 
         /// <summary>

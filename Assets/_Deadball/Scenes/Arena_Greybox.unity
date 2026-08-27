@@ -3356,6 +3356,54 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 525940202}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &540823395
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 540823397}
+  - component: {fileID: 540823396}
+  m_Layer: 0
+  m_Name: MatchModeBootstrap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &540823396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540823395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcbf2e74da422b34290a92ca6fd5a17a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Deadball::Deadball.Match.MatchModeBootstrap
+  _settings: {fileID: 11400000, guid: 9268c36f464c321459f3e3ccb8ba91cd, type: 2}
+  _soloRoster: {fileID: 1767649824}
+  _versusJoin: {fileID: 284664138}
+  _match: {fileID: 284664137}
+--- !u!4 &540823397
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540823395}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &563911542
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11755,6 +11803,56 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1734536710}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1767649823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1767649825}
+  - component: {fileID: 1767649824}
+  m_Layer: 0
+  m_Name: SoloRoster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &1767649824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1767649823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e80a5ab9d440c0745ae666be3ddd9fd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Deadball::Deadball.AI.SoloRoster
+  _runnerPrefab: {fileID: 7840114324454654345, guid: 9427117bb08fdd94cba57771f2dc33b0,
+    type: 3}
+  _arena: {fileID: 1124517022}
+  _core: {fileID: 1851174282}
+  _heat: {fileID: 284664146}
+  _profile: {fileID: 11400000, guid: 9e596bb3fa66104478e91379b5f77f14, type: 2}
+--- !u!4 &1767649825
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1767649823}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1815497063
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14305,3 +14403,5 @@ SceneRoots:
   - {fileID: 1555620180}
   - {fileID: 820996341}
   - {fileID: 811722271}
+  - {fileID: 1767649825}
+  - {fileID: 540823397}
