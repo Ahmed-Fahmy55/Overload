@@ -29,6 +29,13 @@ namespace Deadball.Presentation
         [Required, SerializeField] TrailRenderer _trail;
         [Required, SerializeField] FighterPalette _palette;
 
+        [Tooltip("The plasma body of the core. Tinted with everything else so possession, heat and "
+            + "the flash cue still read (17).")]
+        [SerializeField] ParticleSystem[] _plasma;
+
+        [Tooltip("Only alight while the core is CRITICAL. Off is the normal state (16.3).")]
+        [SerializeField] GameObject _criticalAura;
+
         [Title("Trail")]
         [Tooltip("A soft lob is a thin white streak; a max-charge shot is a fat hot one (8.2).")]
         [SuffixLabel("m", true), SerializeField] float _minTrailWidth = 0.08f;
@@ -68,9 +75,22 @@ namespace Deadball.Presentation
         public void SetHeat(float heat01) => _heat01 = Mathf.Clamp01(heat01);
 
         /// <summary>Switches the core to its white-hot strobing state.</summary>
-        public void SetCritical(bool critical) => _isCritical = critical;
+        public void SetCritical(bool critical)
+        {
+            _isCritical = critical;
 
-        void Awake() => _block = new MaterialPropertyBlock();
+            // Guarded so a repeated call does not restart the aura's own animation every frame.
+            if (_criticalAura != null && _criticalAura.activeSelf != critical)
+                _criticalAura.SetActive(critical);
+        }
+
+        void Awake()
+        {
+            _block = new MaterialPropertyBlock();
+
+            // A round can start with the aura left on from the previous one.
+            if (_criticalAura != null) _criticalAura.SetActive(false);
+        }
 
         void OnEnable()
         {
@@ -128,6 +148,29 @@ namespace Deadball.Presentation
             _block.SetColor(BaseColorId, target);
             _block.SetColor(EmissionColorId, target * 2f);
             _renderer.SetPropertyBlock(_block);
+
+            TintPlasma(target);
+        }
+
+        /// <summary>
+        /// Pushes the core's current colour onto the plasma body.
+        /// </summary>
+        /// <remarks>
+        /// Only newly emitted particles pick this up, which is exactly what is wanted: the plasma
+        /// bleeds from one colour to the next over a few frames instead of snapping, while the solid
+        /// centre and the trail change instantly. A short particle lifetime keeps that lag readable.
+        /// </remarks>
+        void TintPlasma(Color colour)
+        {
+            if (_plasma == null) return;
+
+            foreach (ParticleSystem system in _plasma)
+            {
+                if (system == null) continue;
+
+                ParticleSystem.MainModule main = system.main;
+                main.startColor = colour;
+            }
         }
 
         void ApplyTrail()
