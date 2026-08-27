@@ -25,6 +25,9 @@ namespace Deadball.Presentation
         [Tooltip("Ground ring under the feet.")]
         [SerializeField] Renderer _groundRing;
 
+        [Tooltip("Suit light. On a near-black deck this is what stops a dark suit disappearing.")]
+        [SerializeField] Light _suitLight;
+
         [Title("Feedback")]
         [PropertyRange(0f, 1f), SerializeField] float _knockedFlashFade = 0.6f;
 
@@ -54,6 +57,10 @@ namespace Deadball.Presentation
             // The ring is dimmer than the body so it frames the silhouette instead of competing
             // with it - the ball has to stay the brightest thing on screen.
             Tint(_groundRing, colour * _knockedFlashFade, emissive: false);
+
+            // Standing in your own coloured light is the cheapest possible substitute for the rim
+            // lighting section 17 asks for, and it doubles as identity.
+            if (_suitLight != null) _suitLight.color = colour;
         }
 
         void Tint(Renderer target, Color colour, bool emissive)

@@ -125,6 +125,8 @@ InitTestScene*.unity*
 /Assets/Ultimate 10 Plus Shaders.meta
 /Assets/VeryAnimation/
 /Assets/VeryAnimation.meta
+/Assets/Synty/
+/Assets/Synty.meta
 
 # Newer solution format; Unity regenerates it (*.sln and *.csproj already ignored above)
 *.slnx
