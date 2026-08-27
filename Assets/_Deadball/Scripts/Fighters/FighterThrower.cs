@@ -185,8 +185,13 @@ namespace Deadball.Fighters
             float clamped = Mathf.Clamp01(value);
             if (Mathf.Approximately(clamped, Charge01)) return;
 
+            bool wasMaxed = Charge01 >= 1f;
             Charge01 = clamped;
             ChargeChanged?.Invoke(Charge01);
+
+            // Only on the crossing, so holding at full does not retrigger the snap every frame.
+            if (!wasMaxed && Charge01 >= 1f)
+                EventBus<ChargeMaxed>.Raise(new ChargeMaxed(_slot, transform.position));
         }
     }
 }

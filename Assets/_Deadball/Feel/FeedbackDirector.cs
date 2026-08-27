@@ -45,12 +45,25 @@ namespace Deadball.Feel
         [Tooltip("KO: slow-mo, zoom, vignette, derez, blackout.")]
         public MMF_Player KO;
 
+        [Header("Section 22")]
+        [Tooltip("Containment field flare where the core rebounds. Moved to the contact point.")]
+        public MMF_Player Bounce;
+
+        [Tooltip("The ring slamming shut at full charge: a click and a small kick.")]
+        public MMF_Player ChargeMax;
+
+        [Tooltip("Vent puff under a dodging runner. Moved to the runner.")]
+        public MMF_Player Dodge;
+
         EventBinding<ChargeStarted> _chargeStarted;
         EventBinding<BallThrown> _thrown;
         EventBinding<BallFlashCue> _flash;
         EventBinding<BallCaught> _caught;
         EventBinding<FighterKnocked> _knocked;
         EventBinding<FighterKnockedOut> _knockedOut;
+        EventBinding<BallBounced> _bounced;
+        EventBinding<ChargeMaxed> _chargeMaxed;
+        EventBinding<FighterDodged> _dodged;
 
         void OnEnable()
         {
@@ -67,6 +80,14 @@ namespace Deadball.Feel
             EventBus<BallCaught>.Register(_caught);
             EventBus<FighterKnocked>.Register(_knocked);
             EventBus<FighterKnockedOut>.Register(_knockedOut);
+
+            _bounced = new EventBinding<BallBounced>(OnBounced);
+            _chargeMaxed = new EventBinding<ChargeMaxed>(() => Play(ChargeMax));
+            _dodged = new EventBinding<FighterDodged>(OnDodged);
+
+            EventBus<BallBounced>.Register(_bounced);
+            EventBus<ChargeMaxed>.Register(_chargeMaxed);
+            EventBus<FighterDodged>.Register(_dodged);
         }
 
         void OnDisable()
@@ -77,10 +98,37 @@ namespace Deadball.Feel
             EventBus<BallCaught>.Deregister(_caught);
             EventBus<FighterKnocked>.Deregister(_knocked);
             EventBus<FighterKnockedOut>.Deregister(_knockedOut);
+            EventBus<BallBounced>.Deregister(_bounced);
+            EventBus<ChargeMaxed>.Deregister(_chargeMaxed);
+            EventBus<FighterDodged>.Deregister(_dodged);
         }
 
         void OnClamped(BallCaught evt) =>
             Play(evt.Tier == ClampTier.Perfect ? ClampPerfect : ClampLate);
+
+        /// <summary>Flares the containment field where the core actually struck it.</summary>
+        /// <remarks>
+        /// The player is moved onto the contact point and turned to face along the surface normal,
+        /// so a particle burst fires away from the wall rather than into it.
+        /// </remarks>
+        void OnBounced(BallBounced evt)
+        {
+            if (Bounce == null) return;
+
+            Bounce.transform.position = evt.Position;
+            if (evt.Normal.sqrMagnitude > 0.001f)
+                Bounce.transform.rotation = Quaternion.LookRotation(evt.Normal);
+
+            Play(Bounce);
+        }
+
+        void OnDodged(FighterDodged evt)
+        {
+            if (Dodge == null) return;
+
+            Dodge.transform.position = evt.Position;
+            Play(Dodge);
+        }
 
         static void Play(MMF_Player player)
         {

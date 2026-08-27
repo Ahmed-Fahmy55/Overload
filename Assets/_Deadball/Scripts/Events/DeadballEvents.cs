@@ -211,4 +211,44 @@ namespace Deadball.Events
 
         public MatchEnded(int winnerSlot) => WinnerSlot = winnerSlot;
     }
+
+    /// <summary>
+    /// Raised when a flying core rebounds off the containment field or a prop (section 22).
+    /// </summary>
+    /// <remarks>
+    /// Carries the contact point and normal so the flare can be placed on the surface that was hit,
+    /// facing outwards, rather than at the core's centre.
+    /// </remarks>
+    public readonly struct BallBounced : IEvent
+    {
+        public readonly Vector3 Position;
+        public readonly Vector3 Normal;
+        public readonly float Speed;
+        public readonly int BounceNumber;
+
+        public BallBounced(Vector3 position, Vector3 normal, float speed, int bounceNumber)
+        {
+            Position = position;
+            Normal = normal;
+            Speed = speed;
+            BounceNumber = bounceNumber;
+        }
+    }
+
+    /// <summary>Raised the instant a wind-up reaches full charge (section 22, ring snap).</summary>
+    /// <remarks>
+    /// The moment deserves its own event rather than a threshold test in the presenter: max charge
+    /// is a commitment the other player must be able to read, and it should fire exactly once.
+    /// </remarks>
+    public readonly struct ChargeMaxed : IEvent
+    {
+        public readonly int Slot;
+        public readonly Vector3 Position;
+
+        public ChargeMaxed(int slot, Vector3 position)
+        {
+            Slot = slot;
+            Position = position;
+        }
+    }
 }

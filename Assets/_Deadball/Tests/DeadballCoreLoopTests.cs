@@ -354,6 +354,48 @@ namespace Deadball.Tests
                 "The cue has to arrive while the ball is still in the air.");
         }
 
+        [UnityTest]
+        public IEnumerator FullCharge_AnnouncesItselfExactlyOnce()
+        {
+            using var maxed = new ChargeMaxRecorder();
+
+            yield return GiveBallTo(_p1);
+
+            // Held well past full, so a per-frame threshold test would fire many times over.
+            yield return ChargeFor(_input1, _config.MaxChargeTime * 1.8f);
+
+            Assert.That(_p1.Thrower.Charge01, Is.EqualTo(1f).Within(0.001f), "precondition: fully charged");
+            Assert.That(maxed.Count, Is.EqualTo(1),
+                "Max charge is a crossing, not a state - holding at full must not retrigger the snap.");
+            Assert.That(maxed.LastSlot, Is.EqualTo(0), "It must name the runner who charged it.");
+
+            _input1.ThrowHeld = false;
+        }
+
+        [UnityTest]
+        public IEnumerator ARebound_ReportsWhereTheFieldWasStruck()
+        {
+            using var bounces = new BounceRecorder();
+
+            yield return GiveBallTo(_p1);
+
+            // Aimed away from the opponent and into the containment field, so the first thing the
+            // core meets is a wall rather than a runner.
+            _input1.Move = new Vector2(-1f, 0f);
+            yield return Seconds(0.25f);
+            yield return ChargeFor(_input1, _config.MaxChargeTime * 1.2f);
+            _input1.ThrowHeld = false;
+
+            yield return WaitUntil(() => bounces.Count > 0, 400, "the core never struck the field");
+
+            Assert.That(bounces.LastNormal.sqrMagnitude, Is.GreaterThan(0.5f),
+                "The flare is placed with this normal, so it has to be a real direction.");
+            Assert.That(Mathf.Abs(bounces.LastNormal.y), Is.LessThan(0.5f),
+                "A floor contact is a dead ball, not a rebound - this must be a wall.");
+            Assert.That(bounces.LastSpeed, Is.GreaterThan(0f),
+                "Impact speed drives the bounce pitch, so zero would flatten every hit.");
+        }
+
         // ---------------------------------------------------------------- helpers
 
         (Fighter, ScriptedInput) SpawnFighter(int slot, Vector3 position, Quaternion rotation)
@@ -483,6 +525,25 @@ namespace Deadball.Tests
         class KnockedOutRecorder : Recorder<FighterKnockedOut>
         {
             public KnockedOutRecorder() : base() { }
+        }
+
+        class ChargeMaxRecorder : Recorder<ChargeMaxed>
+        {
+            public int LastSlot { get; private set; } = -1;
+
+            protected override void OnEvent(ChargeMaxed evt) => LastSlot = evt.Slot;
+        }
+
+        class BounceRecorder : Recorder<BallBounced>
+        {
+            public Vector3 LastNormal { get; private set; }
+            public float LastSpeed { get; private set; }
+
+            protected override void OnEvent(BallBounced evt)
+            {
+                LastNormal = evt.Normal;
+                LastSpeed = evt.Speed;
+            }
         }
 
         class FlashRecorder : Recorder<BallFlashCue>

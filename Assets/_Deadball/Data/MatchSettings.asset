@@ -15,4 +15,4 @@ MonoBehaviour:
   _mode: 1
   _arenaScene: Arena_Greybox
   _arenaDisplayName: SECTOR 9
-  _aiProfile: {fileID: 0}
+  _aiProfile: {fileID: 11400000, guid: c3f699a54868b174f90bcae4b2f787fb, type: 2}

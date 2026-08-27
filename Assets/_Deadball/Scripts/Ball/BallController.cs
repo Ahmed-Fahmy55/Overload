@@ -425,6 +425,15 @@ namespace Deadball.Ball
             _flashedSlotMask = 0;
             _bounces++;
 
+            // Announced before the possible GoLoose below, so the flare lands on the impact that
+            // actually happened rather than being skipped on the bounce that ends the rally.
+            if (collision.contactCount > 0)
+            {
+                ContactPoint contact = collision.GetContact(0);
+                EventBus<BallBounced>.Raise(new BallBounced(
+                    contact.point, contact.normal, _rb.linearVelocity.magnitude, _bounces));
+            }
+
             if (_bounces >= _config.BouncesBeforeLoose)
                 GoLoose(transform.position);
         }

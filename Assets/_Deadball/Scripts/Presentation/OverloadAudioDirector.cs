@@ -42,6 +42,13 @@ namespace Deadball.Presentation
         [Tooltip("Power-down whine into near-silence on a KO.")]
         [SerializeField] SoundID _derez;
 
+        [Title("Section 22")]
+        [Tooltip("The click as the ring slams shut at full charge. One clip, kept dry and short.")]
+        [SerializeField] SoundID _ringSnap;
+
+        [Tooltip("Containment field hit as the core rebounds. Pitch rises with impact speed.")]
+        [SerializeField] SoundID _bounce;
+
         [Title("Music", "One track per arena - a match is played on one deck (15.3)")]
         [Tooltip("Set per arena scene. Arena 02 is a different scene, so it carries its own track.")]
         [SerializeField] SoundID _music;
@@ -58,6 +65,11 @@ namespace Deadball.Presentation
         [Title("Launch Pitch")]
         [SerializeField] float _minLaunchPitch = 0.85f;
         [SerializeField] float _maxLaunchPitch = 1.35f;
+
+        [Title("Bounce Pitch")]
+        [Tooltip("A soft rebound versus a max-charge slam, from the same clip.")]
+        [SerializeField] float _minBouncePitch = 0.9f;
+        [SerializeField] float _maxBouncePitch = 1.3f;
 
         [Title("Heat Hum Pitch")]
         [Tooltip("Hum pitch at zero heat and at critical. The rise is the tell.")]
@@ -87,6 +99,8 @@ namespace Deadball.Presentation
         EventBinding<RoundStarted> _roundStarted;
         EventBinding<RoundEnded> _roundEnded;
         EventBinding<MatchEnded> _matchEnded;
+        EventBinding<ChargeMaxed> _chargeMaxed;
+        EventBinding<BallBounced> _bounced;
 
         IAudioPlayer _humPlayer;
 
@@ -118,6 +132,12 @@ namespace Deadball.Presentation
             EventBus<RoundStarted>.Register(_roundStarted);
             EventBus<RoundEnded>.Register(_roundEnded);
             EventBus<MatchEnded>.Register(_matchEnded);
+
+            _chargeMaxed = new EventBinding<ChargeMaxed>(() => Play(_ringSnap));
+            _bounced = new EventBinding<BallBounced>(OnBounced);
+
+            EventBus<ChargeMaxed>.Register(_chargeMaxed);
+            EventBus<BallBounced>.Register(_bounced);
         }
 
         void OnDisable()
@@ -133,9 +153,27 @@ namespace Deadball.Presentation
             EventBus<RoundStarted>.Deregister(_roundStarted);
             EventBus<RoundEnded>.Deregister(_roundEnded);
             EventBus<MatchEnded>.Deregister(_matchEnded);
+            EventBus<ChargeMaxed>.Deregister(_chargeMaxed);
+            EventBus<BallBounced>.Deregister(_bounced);
 
             // Stop is safe during teardown; Play is not.
             StopBeds();
+        }
+
+        /// <summary>
+        /// The containment field taking a hit. One clip, pitched by how hard the core struck.
+        /// </summary>
+        /// <remarks>
+        /// Pitch does the work that layering would otherwise do: a glancing rebound and a
+        /// max-charge slam are the same sample, and they still read as different impacts.
+        /// </remarks>
+        void OnBounced(BallBounced evt)
+        {
+            IAudioPlayer player = PlayFor(_bounce);
+            if (player == null) return;
+
+            float hardness = Mathf.InverseLerp(4f, 22f, evt.Speed);
+            player.SetPitch(Mathf.Lerp(_minBouncePitch, _maxBouncePitch, hardness));
         }
 
         /// <summary>
@@ -235,5 +273,8 @@ namespace Deadball.Presentation
         {
             if (id.IsValid()) BroAudio.Play(id);
         }
+
+        /// <summary>Plays a cue and hands back the player so the caller can pitch it.</summary>
+        static IAudioPlayer PlayFor(SoundID id) => id.IsValid() ? BroAudio.Play(id) : null;
     }
 }

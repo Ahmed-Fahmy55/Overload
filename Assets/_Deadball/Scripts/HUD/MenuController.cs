@@ -2,6 +2,7 @@ using Deadball.AI;
 using Deadball.Match;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 namespace Deadball.HUD
@@ -34,6 +35,13 @@ namespace Deadball.HUD
         [Title("Arenas", "15.3 - default SECTOR 9")]
         [SerializeField] string[] _arenaScenes = { "Arena_Greybox", "Arena_TheSpine" };
         [SerializeField] string[] _arenaNames = { "SECTOR 9", "THE SPINE" };
+
+        [Title("Arena Cards", "22 - the picker shows the deck you are choosing")]
+        [Tooltip("One preview per arena, in the same order as the scenes above.")]
+        [SerializeField] Sprite[] _arenaCards;
+
+        [Tooltip("Every Image that should show the chosen deck - the solo and versus panels each have one.")]
+        [SerializeField] Image[] _arenaCardTargets;
 
         [Title("Runtime"), ShowInInspector, ReadOnly]
         public int SelectedTier { get; private set; }
@@ -102,6 +110,29 @@ namespace Deadball.HUD
 
             SelectedArena = Mathf.Clamp(index, 0, _arenaScenes.Length - 1);
             _settings.SetArena(_arenaScenes[SelectedArena], _arenaNames[SelectedArena]);
+            ShowArenaCard(SelectedArena);
+        }
+
+        /// <summary>
+        /// Paints the chosen deck onto every card in the menu.
+        /// </summary>
+        /// <remarks>
+        /// Both setup panels carry a card and both are driven from here, so the solo and versus
+        /// screens can never disagree about which deck is selected.
+        /// </remarks>
+        void ShowArenaCard(int index)
+        {
+            if (_arenaCardTargets == null || _arenaCards == null || _arenaCards.Length == 0) return;
+
+            Sprite card = _arenaCards[Mathf.Clamp(index, 0, _arenaCards.Length - 1)];
+
+            foreach (Image target in _arenaCardTargets)
+            {
+                if (target == null) continue;
+
+                target.sprite = card;
+                target.enabled = card != null;
+            }
         }
 
         /// <summary>Difficulty picker: ROOKIE, OPERATOR, GHOST.</summary>
