@@ -29,6 +29,9 @@ namespace Deadball.Presentation
         [Required, SerializeField] MatchConfig _config;
         [Required, SerializeField] Transform _lookTarget;
 
+        [Tooltip("Optional. Frames this deck's real footprint instead of the config's square.")]
+        [SerializeField] Deadball.Match.ArenaReferences _arena;
+
         [SuffixLabel("deg", true), PropertyRange(20f, 89f), SerializeField] float _tilt = 50f;
         [Tooltip("Extra room around the arena so fighters never sit on the screen edge.")]
         [PropertyRange(1f, 2f), SerializeField] float _framingMargin = 1.15f;
@@ -96,7 +99,12 @@ namespace Deadball.Presentation
             if (_camera == null) _camera = GetComponent<Camera>();
             if (_config == null || _lookTarget == null) return;
 
-            float half = _config.ArenaSize * 0.5f * _framingMargin;
+            Vector2 footprint = _arena != null
+                ? _arena.Size
+                : new Vector2(_config.ArenaSize, _config.ArenaSize);
+
+            float halfWidth = footprint.x * 0.5f * _framingMargin;
+            float halfDepth = footprint.y * 0.5f * _framingMargin;
             float radians = _tilt * Mathf.Deg2Rad;
 
             float halfFovV = _camera.fieldOfView * 0.5f * Mathf.Deg2Rad;
@@ -105,8 +113,8 @@ namespace Deadball.Presentation
             // The depth axis is foreshortened by the tilt, so the arena needs less vertical frame
             // than its footprint suggests. Ignoring that pushes the camera roughly a third further
             // back than it needs to be and wastes most of the screen on empty ground.
-            float verticalExtent = half * Mathf.Sin(radians) + WallClearance * Mathf.Cos(radians);
-            float distance = Mathf.Max(verticalExtent / Mathf.Tan(halfFovV), half / Mathf.Tan(halfFovH));
+            float verticalExtent = halfDepth * Mathf.Sin(radians) + WallClearance * Mathf.Cos(radians);
+            float distance = Mathf.Max(verticalExtent / Mathf.Tan(halfFovV), halfWidth / Mathf.Tan(halfFovH));
 
             Vector3 back = new(0f, Mathf.Sin(radians), -Mathf.Cos(radians));
 

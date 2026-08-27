@@ -20,6 +20,12 @@ namespace Deadball.Match
 
         [Required, SerializeField] MatchConfig _config;
 
+        [Tooltip("This deck's footprint. Sector 9 is 20x20; The Spine is 14x28 (15.1, 15.2).")]
+        [SerializeField] Vector2 _size = new(20f, 20f);
+
+        /// <summary>Deck footprint in metres. Per-arena, because the two decks are not the same shape.</summary>
+        public Vector2 Size => _size;
+
         public Vector3 Centre => _centre.position;
         public int SpawnCount => _spawnPoints.Length;
 

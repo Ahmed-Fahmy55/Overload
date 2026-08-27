@@ -149,6 +149,7 @@ namespace Deadball.Match
                 fighter.PrepareForRound(pos, rot, knocksAllowed);
             }
 
+            _ball.ArenaSize = _arena.Size;
             _ball.ResetForRound(_arena.Centre);
         }
 

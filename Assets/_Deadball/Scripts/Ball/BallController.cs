@@ -70,6 +70,15 @@ namespace Deadball.Ball
         /// </remarks>
         public bool IsCritical { get; set; }
 
+        /// <summary>
+        /// Deck footprint used to keep a loose core inside the arena.
+        /// </summary>
+        /// <remarks>
+        /// Set per round from the arena rather than read from the shared config, because the two
+        /// decks are different shapes and a square assumption strands the core outside The Spine.
+        /// </remarks>
+        public Vector2 ArenaSize { get; set; }
+
         public MatchConfig Config => _config;
 
         /// <summary>Current flight velocity. Read by the AI to predict arrival (13.2).</summary>
@@ -354,7 +363,11 @@ namespace Deadball.Ball
         Vector3 ResolveRestingPosition(Vector3 desired)
         {
             int arenaMask = 1 << DeadballLayers.ArenaLayer;
-            float limit = _config.ArenaSize * 0.5f - 1f;
+
+            Vector2 footprint = ArenaSize.sqrMagnitude > 0.01f
+                ? ArenaSize
+                : new Vector2(_config.ArenaSize, _config.ArenaSize);
+            var limit = new Vector2(footprint.x * 0.5f - 1f, footprint.y * 0.5f - 1f);
 
             Vector3 candidate = Flatten(desired, limit);
             if (IsClear(candidate, arenaMask)) return candidate;
@@ -389,10 +402,10 @@ namespace Deadball.Ball
             return !Physics.CheckSphere(point, radius, arenaMask, QueryTriggerInteraction.Ignore);
         }
 
-        Vector3 Flatten(Vector3 point, float limit) => new(
-            Mathf.Clamp(point.x, _arenaCentre.x - limit, _arenaCentre.x + limit),
+        Vector3 Flatten(Vector3 point, Vector2 limit) => new(
+            Mathf.Clamp(point.x, _arenaCentre.x - limit.x, _arenaCentre.x + limit.x),
             _restHeight,
-            Mathf.Clamp(point.z, _arenaCentre.z - limit, _arenaCentre.z + limit));
+            Mathf.Clamp(point.z, _arenaCentre.z - limit.y, _arenaCentre.z + limit.y));
 
         void OnCollisionEnter(Collision collision)
         {
