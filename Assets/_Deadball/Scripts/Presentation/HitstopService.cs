@@ -17,6 +17,7 @@ namespace Deadball.Presentation
     public class HitstopService : MonoBehaviour
     {
         [Title("Durations")]
+        [Tooltip("Perfect clamp only. A late clamp gets no freeze at all (20).")]
         [SuffixLabel("s", true), MinValue(0f), SerializeField] float _onCatch = 0.15f;
         [SuffixLabel("s", true), MinValue(0f), SerializeField] float _onKnock = 0.08f;
 
@@ -32,7 +33,12 @@ namespace Deadball.Presentation
 
         void OnEnable()
         {
-            _caught = new EventBinding<BallCaught>(() => Freeze(_onCatch));
+            // Only a PERFECT clamp earns the freeze. Freezing on a late clamp would reward the
+            // mercy tier with the perfect tier's punctuation and flatten the difference between them.
+            _caught = new EventBinding<BallCaught>(evt =>
+            {
+                if (evt.Tier == Deadball.Fighters.ClampTier.Perfect) Freeze(_onCatch);
+            });
             _knocked = new EventBinding<FighterKnocked>(() => Freeze(_onKnock));
             _knockedOut = new EventBinding<FighterKnockedOut>(OnKnockedOut);
 
