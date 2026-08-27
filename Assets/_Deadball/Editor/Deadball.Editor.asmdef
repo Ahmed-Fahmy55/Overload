@@ -1,0 +1,23 @@
+{
+    "name": "Deadball.Editor",
+    "rootNamespace": "Deadball.Editor",
+    "references": [
+        "Deadball",
+        "Core.EventBus",
+        "Zone8.ImprovedTimers",
+        "Unity.InputSystem",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
