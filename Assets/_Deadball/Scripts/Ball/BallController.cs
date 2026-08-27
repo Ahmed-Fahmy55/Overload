@@ -72,6 +72,9 @@ namespace Deadball.Ball
 
         public MatchConfig Config => _config;
 
+        /// <summary>Current flight velocity. Read by the AI to predict arrival (13.2).</summary>
+        public Vector3 Velocity => _rb != null ? _rb.linearVelocity : Vector3.zero;
+
         /// <summary>Renderer root, handed to presenters for tinting, flashing and squash.</summary>
         public Transform Visual => _visual;
 
