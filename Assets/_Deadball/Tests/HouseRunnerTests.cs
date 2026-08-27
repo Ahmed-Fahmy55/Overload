@@ -52,6 +52,7 @@ namespace Deadball.Tests
             Strip<MatchManager>();
             Strip<RoundManager>();
             Strip<HitstopService>();
+            StripFeedbacks();
             ClearFighters();
 
             Time.timeScale = 1f;
@@ -252,6 +253,27 @@ namespace Deadball.Tests
             }
 
             Assert.That(condition(), Is.True, $"Timed out after {timeoutSeconds}s: {message}.");
+        }
+
+
+        /// <summary>
+        /// Removes the Feel players and the time manager before a test runs.
+        /// </summary>
+        /// <remarks>
+        /// Freeze-frame and timescale feedbacks stop the clock, and every step-based wait in these
+        /// tests advances on that clock - so left in, they turn assertions into timeouts. Stripped by
+        /// name rather than by type because Feel ships no assembly definition, which puts the
+        /// feedback bridge in Assembly-CSharp where this assembly cannot see it.
+        /// </remarks>
+        static void StripFeedbacks()
+        {
+            foreach (GameObject go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+            {
+                if (go != null && (go.name == "Feedbacks" || go.name == "MMTimeManager"))
+                    Object.DestroyImmediate(go);
+            }
+
+            Time.timeScale = 1f;
         }
 
         static void Strip<T>() where T : Component
