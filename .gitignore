@@ -105,3 +105,29 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# --- Project-local: third-party asset packs are not pushed ---
+# These live on disk and are re-imported from the Asset Store rather than
+# carried in the repo. Only code, scenes, prefabs and tuning assets are tracked.
+/Assets/BroAudio/
+/Assets/BroAudio.meta
+/Assets/Card_Game/
+/Assets/Card_Game.meta
+/Assets/Sci-Fi Game Sound Effects/
+/Assets/Sci-Fi Game Sound Effects.meta
+/Assets/DoubleL/
+/Assets/DoubleL.meta
+/Assets/Hovl Studio/
+/Assets/Hovl Studio.meta
+/Assets/Plasma FX/
+/Assets/Plasma FX.meta
+/Assets/Ultimate 10 Plus Shaders/
+/Assets/Ultimate 10 Plus Shaders.meta
+/Assets/VeryAnimation/
+/Assets/VeryAnimation.meta
+
+# Newer solution format; Unity regenerates it (*.sln and *.csproj already ignored above)
+*.slnx
+
+# Stray hooks directory from a Windows /dev/null redirect
+/dev/
