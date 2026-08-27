@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "unity-editor": {
+      "type": "stdio",
+      "command": "C:/Users/korab/AppData/Local/Unity/bin/unity.exe",
+      "args": [
+        "mcp",
+        "--project-path",
+        "D:/Unity/Zanga/Club Jam"
+      ],
+      "env": {}
+    }
+  }
+}
