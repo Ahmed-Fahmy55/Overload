@@ -54,6 +54,16 @@ namespace Deadball.AI
         /// <summary>The tier this runner is playing at (13.3). Read-only: the roster owns the choice.</summary>
         public AiProfile Profile => _profile;
 
+        [Title("Obstacle Avoidance", "13.2 - a runner that walks into a crate is not a runner")]
+        [Tooltip("How far ahead the runner looks for props.")]
+        [SuffixLabel("m", true), MinValue(0.1f), SerializeField] float _probeDistance = 2.4f;
+
+        [Tooltip("Roughly the runner's shoulder width, so it does not clip corners.")]
+        [SuffixLabel("m", true), MinValue(0.05f), SerializeField] float _probeRadius = 0.45f;
+
+        [Tooltip("What counts as an obstacle. Runners and the core are always ignored.")]
+        [SerializeField] LayerMask _obstacleMask = ~0;
+
         public AiState State { get; private set; } = AiState.Hunt;
 
         [ShowInInspector, ReadOnly]
@@ -146,6 +156,68 @@ namespace Deadball.AI
             }
         }
 
+
+        /// <summary>
+        /// Bends a desired heading around whatever is in the way.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Without this the runner walks straight at the core and simply stops when a crate is
+        /// between the two, because the motor keeps pushing into a collider that will not move. The
+        /// fix is steering rather than pathfinding: probe ahead, and if the way is blocked take the
+        /// nearest heading that is not.
+        /// </para>
+        /// <para>
+        /// Angles are tried in widening pairs so the runner prefers the smallest deviation that
+        /// works, which keeps the detour looking like a decision rather than a random turn.
+        /// </para>
+        /// </remarks>
+        Vector3 Steer(Vector3 desired)
+        {
+            Vector3 flat = new(desired.x, 0f, desired.z);
+            if (flat.sqrMagnitude < 0.0001f) return desired;
+
+            Vector3 direction = flat.normalized;
+            if (IsClear(direction)) return desired;
+
+            for (int step = 1; step <= 4; step++)
+            {
+                float angle = step * 25f;
+
+                Vector3 right = Quaternion.AngleAxis(angle, Vector3.up) * direction;
+                if (IsClear(right)) return right * flat.magnitude;
+
+                Vector3 left = Quaternion.AngleAxis(-angle, Vector3.up) * direction;
+                if (IsClear(left)) return left * flat.magnitude;
+            }
+
+            // Boxed in: keep the original heading rather than freezing, so contact resolves it.
+            return desired;
+        }
+
+        bool IsClear(Vector3 direction)
+        {
+            Vector3 origin = transform.position + Vector3.up * 0.9f;
+
+            RaycastHit[] hits = Physics.SphereCastAll(origin, _probeRadius, direction,
+                _probeDistance, _obstacleMask, QueryTriggerInteraction.Ignore);
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider == null) continue;
+                if (hit.collider.transform.IsChildOf(transform)) continue;
+
+                // Other runners are not obstacles to route around - they move, and treating them
+                // as walls makes the bot refuse to close on the core. The core is the goal itself.
+                if (hit.collider.GetComponentInParent<Fighter>() != null) continue;
+                if (hit.collider.GetComponentInParent<BallController>() != null) continue;
+
+                return false;
+            }
+
+            return true;
+        }
+
         void Hunt()
         {
             ThrowHeld = false;
@@ -156,7 +228,7 @@ namespace Deadball.AI
             // A slight overshoot past the core stops the approach looking like a nav-mesh agent
             // gliding onto a waypoint (13.2).
             Vector3 overshoot = toCore.normalized * 0.6f;
-            Move = Flatten(toCore + overshoot);
+            Move = Flatten(Steer(toCore + overshoot));
         }
 
         void Aim()
@@ -175,7 +247,7 @@ namespace Deadball.AI
             // while rooted, so aiming and moving use the same channel a player has (7.3).
             if (range > _profile.PreferredRange * 1.15f)
             {
-                Move = Flatten(toOpponent);
+                Move = Flatten(Steer(toOpponent));
                 ThrowHeld = false;
                 return;
             }
@@ -198,7 +270,7 @@ namespace Deadball.AI
             // Perpendicular strafe rather than a straight retreat: backing away in a line is both
             // easy to lead and a good way to end up pinned against the containment field.
             Vector3 strafe = Vector3.Cross(Vector3.up, fromThreat.normalized);
-            Move = Flatten(strafe * _evadeBias.y + fromThreat.normalized * 0.35f);
+            Move = Flatten(Steer(strafe * _evadeBias.y + fromThreat.normalized * 0.35f));
 
             if (Time.time < _nextDodge) return;
 

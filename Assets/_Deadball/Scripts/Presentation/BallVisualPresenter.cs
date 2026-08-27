@@ -36,6 +36,18 @@ namespace Deadball.Presentation
         [Tooltip("Only alight while the core is CRITICAL. Off is the normal state (16.3).")]
         [SerializeField] GameObject _criticalAura;
 
+        [Tooltip("Plasma shed along the flight path. Carries the same charge read as the line trail.")]
+        [SerializeField] ParticleSystem _trailVfx;
+
+        [Tooltip("Emission multiplier on the core. Kept low because bloom already flares it.")]
+        [PropertyRange(0.5f, 3f), SerializeField] float _emissionBoost = 1.25f;
+
+        [Title("Trail Plasma")]
+        [MinValue(0f), SerializeField] float _minTrailRate = 40f;
+        [MinValue(0f), SerializeField] float _maxTrailRate = 220f;
+        [MinValue(0f), SerializeField] float _minTrailSize = 0.14f;
+        [MinValue(0f), SerializeField] float _maxTrailSize = 0.4f;
+
         [Title("Trail")]
         [Tooltip("A soft lob is a thin white streak; a max-charge shot is a fat hot one (8.2).")]
         [SuffixLabel("m", true), SerializeField] float _minTrailWidth = 0.08f;
@@ -125,10 +137,19 @@ namespace Deadball.Presentation
             if (current == BallState.Caught)
                 Flash();
 
-            if (current != BallState.Flying)
+            bool flying = current == BallState.Flying;
+
+            if (!flying)
                 _trail.Clear();
 
-            _trail.emitting = current == BallState.Flying;
+            _trail.emitting = flying;
+
+            // The plasma is the trail; the line underneath is now only its bright spine.
+            if (_trailVfx != null)
+            {
+                if (flying) _trailVfx.Play();
+                else _trailVfx.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
         }
 
         void ApplyColour()
@@ -146,7 +167,9 @@ namespace Deadball.Presentation
 
             _renderer.GetPropertyBlock(_block);
             _block.SetColor(BaseColorId, target);
-            _block.SetColor(EmissionColorId, target * 2f);
+            // Bloom does most of the work now that post-processing is on; a 2x emission on top of
+            // it inflated the core into a ball far larger than its 0.34m body.
+            _block.SetColor(EmissionColorId, target * _emissionBoost);
             _renderer.SetPropertyBlock(_block);
 
             TintPlasma(target);
@@ -184,6 +207,16 @@ namespace Deadball.Presentation
             Color trailColour = OwnerColour();
             _trail.startColor = trailColour;
             _trail.endColor = new Color(trailColour.r, trailColour.g, trailColour.b, 0f);
+
+            if (_trailVfx == null) return;
+
+            // A soft lob sheds a thin wisp; a max-charge shot leaves a thick plasma wake (8.2).
+            ParticleSystem.EmissionModule emission = _trailVfx.emission;
+            emission.rateOverTime = Mathf.Lerp(_minTrailRate, _maxTrailRate, charge);
+
+            ParticleSystem.MainModule trailMain = _trailVfx.main;
+            trailMain.startSize = Mathf.Lerp(_minTrailSize, _maxTrailSize, charge);
+            trailMain.startColor = trailColour;
         }
 
         /// <summary>

@@ -175,6 +175,35 @@ namespace Deadball.Tests
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator HuntsAroundAnObstacleInsteadOfStalling()
+        {
+            // A slab straight across the line between the runner and the core. Walking at the core
+            // now means walking into this, and a runner with no steering simply leans on it.
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "TestObstacle";
+            wall.transform.position = new Vector3(2.5f, 1f, 0f);
+            wall.transform.localScale = new Vector3(0.6f, 2f, 5f);
+
+            try
+            {
+                _core.GoLoose(new Vector3(-1f, 0f, 0f));
+                yield return WaitUntil(() => _brain.State == AiState.Hunt, 2f, "never entered HUNT");
+
+                float before = Vector3.Distance(_house.transform.position, _core.transform.position);
+                yield return Seconds(2.5f);
+                float after = Vector3.Distance(_house.transform.position, _core.transform.position);
+
+                Assert.That(after, Is.LessThan(before - 1f),
+                    $"The runner has to get around the slab, not stall against it "
+                    + $"(closed from {before:0.00}m to {after:0.00}m).");
+            }
+            finally
+            {
+                Object.DestroyImmediate(wall);
+            }
+        }
+
         // ---------------------------------------------------------------- helpers
 
         static AiProfile Load(string path)
