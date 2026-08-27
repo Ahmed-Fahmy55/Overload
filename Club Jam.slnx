@@ -7,7 +7,6 @@
   <Project Path="Deadball.Tests.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="Zone8.ImprovedTimers.csproj" />
-  <Project Path="Deadball.Editor.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Core.EventBus.csproj" />
   <Project Path="Sirenix.OdinInspector.Modules.UnityMathematics.csproj" />
