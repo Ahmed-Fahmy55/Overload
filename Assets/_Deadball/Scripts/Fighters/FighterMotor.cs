@@ -27,7 +27,17 @@ namespace Deadball.Fighters
         public bool IsInvulnerable => IsDodging && Dodge.CurrentTime > _config.DodgeDuration - _config.DodgeInvulnerability;
 
         [ShowInInspector, ReadOnly]
-        public bool CanDodge => !IsDodging && _acceptsInput && !Cooldown.IsRunning;
+        public bool CanDodge => !IsDodging && _acceptsInput && !IsStunned && !Cooldown.IsRunning;
+
+        /// <summary>
+        /// True while staggered by a perfect clamp (8.2). No movement, no dodge, no throw.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately not the same thing as being rooted by a charge: a stun is imposed, so it also
+        /// blocks the dodge that would normally cancel a charge.
+        /// </remarks>
+        [ShowInInspector, ReadOnly]
+        public bool IsStunned => Stun is { IsRunning: true, IsFinished: false };
 
         /// <summary>Set while charging a throw: rotation stays free, translation does not (7.3).</summary>
         public bool Rooted { get; set; }
@@ -43,6 +53,7 @@ namespace Deadball.Fighters
         Rigidbody _rb;
         CountdownTimer _dodge;
         CountdownTimer _cooldown;
+        CountdownTimer _stun;
         Vector2 _moveInput;
         Vector3 _dodgeDirection;
         bool _acceptsInput = true;
@@ -52,6 +63,7 @@ namespace Deadball.Fighters
         // the very first SetControlEnabled of a match would otherwise hit a null timer.
         CountdownTimer Dodge => _dodge ??= new CountdownTimer(_config.DodgeDuration);
         CountdownTimer Cooldown => _cooldown ??= new CountdownTimer(_config.DodgeCooldown);
+        CountdownTimer Stun => _stun ??= new CountdownTimer(_config.PerfectClampStun);
 
         Rigidbody Body
         {
@@ -74,6 +86,7 @@ namespace Deadball.Fighters
         {
             _dodge?.Dispose();
             _cooldown?.Dispose();
+            _stun?.Dispose();
         }
 
         void FixedUpdate()
@@ -120,6 +133,7 @@ namespace Deadball.Fighters
             IsDodging = false;
             Rooted = false;
             Dodge.Stop();
+            Stun.Stop();
             Body.linearVelocity = Vector3.zero;
         }
 
@@ -129,6 +143,7 @@ namespace Deadball.Fighters
             IsDodging = false;
             Dodge.Stop();
             Cooldown.Stop();
+            Stun.Stop();
             _moveInput = Vector2.zero;
 
             Body.linearVelocity = Vector3.zero;
@@ -137,9 +152,20 @@ namespace Deadball.Fighters
             transform.SetPositionAndRotation(position, rotation);
         }
 
+        /// <summary>Staggers the runner for a moment after being beaten by a perfect clamp.</summary>
+        public void Stagger(float seconds)
+        {
+            if (seconds <= 0f) return;
+
+            IsDodging = false;
+            Dodge.Stop();
+            Stun.Reset(seconds);
+            Stun.Start();
+        }
+
         Vector3 DesiredVelocity()
         {
-            if (!_acceptsInput || Rooted) return Vector3.zero;
+            if (!_acceptsInput || Rooted || IsStunned) return Vector3.zero;
 
             float speed = _config.MoveSpeed * (Slowed ? _config.HoldingSpeedMultiplier : 1f);
             return new Vector3(_moveInput.x, 0f, _moveInput.y) * speed;
@@ -147,7 +173,7 @@ namespace Deadball.Fighters
 
         void ApplyFacing()
         {
-            if (!_acceptsInput || _moveInput.sqrMagnitude < 0.01f) return;
+            if (!_acceptsInput || IsStunned || _moveInput.sqrMagnitude < 0.01f) return;
 
             var target = Quaternion.LookRotation(new Vector3(_moveInput.x, 0f, _moveInput.y));
             Body.MoveRotation(Quaternion.RotateTowards(Body.rotation, target, _config.TurnSpeed * Time.fixedDeltaTime));

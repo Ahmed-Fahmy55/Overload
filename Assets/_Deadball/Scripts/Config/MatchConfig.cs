@@ -85,9 +85,39 @@ namespace Deadball.Config
         [SerializeField] float _catchFlashLead = 0.35f;
 
         [TabGroup("Tuning", "Catch")]
+        [SuffixLabel("s", true), MinValue(0.01f), LabelText("Perfect Band")]
+        [InfoBox("The first slice of the window (8.2). Arrive inside it and the core locks on with "
+            + "charge preserved; arrive after it and you get the LATE tier - the core stops but drops "
+            + "loose at your feet. The mercy tier is also the cooling tier.")]
+        [SerializeField] float _perfectClampBand = 0.12f;
+
+        [TabGroup("Tuning", "Catch")]
+        [SuffixLabel("s", true), MinValue(0f), LabelText("Perfect Clamp Stun")]
+        [SerializeField] float _perfectClampStun = 0.35f;
+
+        [TabGroup("Tuning", "Catch")]
         [SuffixLabel("s", true), MinValue(0f), LabelText("Lockout On Miss")]
         [InfoBox("$LockoutAdvice", InfoMessageType.Warning)]
         [SerializeField] float _catchLockout = 0.6f;
+
+        [TabGroup("Tuning", "Heat")]
+        [Title("Rally Heat", "16 - the longer you keep the core alive, the likelier it is to kill you")]
+        [MinValue(0f), LabelText("Gain Per Perfect Clamp")]
+        [SerializeField] float _heatPerPerfectClamp = 22f;
+
+        [TabGroup("Tuning", "Heat")]
+        [SuffixLabel("per sec", true), MinValue(0f), LabelText("Decay While Loose")]
+        [InfoBox("Heat only bleeds off while the core is LOOSE on the deck. That is what makes "
+            + "deliberately letting it go a real option (16.1).")]
+        [SerializeField] float _heatDecayPerSecond = 25f;
+
+        [TabGroup("Tuning", "Heat")]
+        [MinValue(1f), LabelText("Critical Threshold")]
+        [SerializeField] float _criticalHeat = 80f;
+
+        [TabGroup("Tuning", "Heat")]
+        [MinValue(1f), LabelText("Max Heat")]
+        [SerializeField] float _maxHeat = 100f;
 
         [TabGroup("Tuning", "Ball")]
         [Title("Ball", "6.3 - there is exactly one")]
@@ -172,6 +202,13 @@ namespace Deadball.Config
         public float SelfHitImmunity => _selfHitImmunity;
 
         public float CatchWindow => _catchWindow;
+        public float PerfectClampBand => Mathf.Min(_perfectClampBand, _catchWindow);
+        public float PerfectClampStun => _perfectClampStun;
+
+        public float HeatPerPerfectClamp => _heatPerPerfectClamp;
+        public float HeatDecayPerSecond => _heatDecayPerSecond;
+        public float CriticalHeat => _criticalHeat;
+        public float MaxHeat => _maxHeat;
         public float CatchFlashLead => _catchFlashLead;
         public float CatchLockout => _catchLockout;
 
@@ -201,8 +238,15 @@ namespace Deadball.Config
             return overtime && _overtimeEnabled ? speed * (1f + _overtimeSpeedBonus) : speed;
         }
 
-        /// <summary>Knocks dealt by a hit from a throw charged to <paramref name="charge01"/>.</summary>
-        public int KnocksForHit(float charge01) => charge01 >= _instantKoCharge ? _knocksToKo : 1;
+        /// <summary>
+        /// Knocks dealt by a hit (9).
+        /// </summary>
+        /// <remarks>
+        /// A max-charge throw ends it, and so does any contact while the core is critical - that is
+        /// the whole point of letting heat climb.
+        /// </remarks>
+        public int KnocksForHit(float charge01, bool coreIsCritical = false) =>
+            coreIsCritical || charge01 >= _instantKoCharge ? _knocksToKo : 1;
 
         string LockoutAdvice =>
             "The most important number in the game (9). Tune this before touching anything else - "

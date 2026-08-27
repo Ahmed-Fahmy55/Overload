@@ -40,6 +40,16 @@ namespace Deadball.Presentation
         [SuffixLabel("s", true), MinValue(0.01f), SerializeField] float _flashDuration = 0.12f;
         [SerializeField] Color _flashColour = Color.white;
 
+        [Title("Heat Ramp", "16.3 - nobody needs a tutorial to read a white-hot core")]
+        [SerializeField] Color _heatCold = new(0.75f, 0.9f, 1f);
+        [SerializeField] Color _heatWarm = new(1f, 0.65f, 0.15f);
+        [SerializeField] Color _heatCritical = Color.white;
+
+        [Tooltip("Strobe rate at CRITICAL. The whole arena should feel wrong.")]
+        [SuffixLabel("Hz", true), SerializeField] float _criticalStrobeSpeed = 9f;
+
+        [PropertyRange(0f, 1f), SerializeField] float _criticalStrobeDepth = 0.45f;
+
         [Title("Loose Pulse")]
         [SuffixLabel("Hz", true), SerializeField] float _pulseSpeed = 2.2f;
         [PropertyRange(0f, 1f), SerializeField] float _pulseDepth = 0.35f;
@@ -51,6 +61,14 @@ namespace Deadball.Presentation
         EventBinding<BallThrown> _thrownBinding;
         float _flashRemaining;
         int _lastThrowerSlot;
+        float _heat01;
+        bool _isCritical;
+
+        /// <summary>Drives the colour ramp. Called by the heat broadcaster (16.3).</summary>
+        public void SetHeat(float heat01) => _heat01 = Mathf.Clamp01(heat01);
+
+        /// <summary>Switches the core to its white-hot strobing state.</summary>
+        public void SetCritical(bool critical) => _isCritical = critical;
 
         void Awake() => _block = new MaterialPropertyBlock();
 
@@ -131,12 +149,25 @@ namespace Deadball.Presentation
         /// </summary>
         Color OwnerColour()
         {
-            int slot = _ball.HolderSlot;
-            if (slot >= 0) return _palette.BodyColour(slot);
+            // Heat overrides identity once the core is genuinely dangerous: at that point what the
+            // core is about to do to you matters more than whose colour it is wearing (16.3).
+            if (_isCritical)
+            {
+                float strobe = 1f + Mathf.Sin(Time.time * _criticalStrobeSpeed * Mathf.PI * 2f) * _criticalStrobeDepth;
+                return _heatCritical * strobe;
+            }
 
-            return _ball.State == BallState.Flying
-                ? _palette.TrailColour(_lastThrowerSlot)
-                : _palette.LooseBallColour;
+            int slot = _ball.HolderSlot;
+            Color identity = slot >= 0
+                ? _palette.BodyColour(slot)
+                : _ball.State == BallState.Flying
+                    ? _palette.TrailColour(_lastThrowerSlot)
+                    : _palette.LooseBallColour;
+
+            // Below critical the ramp tints the owner colour rather than replacing it, so you can
+            // still read possession at a glance while the core warms up.
+            Color heatTint = Color.Lerp(_heatCold, _heatWarm, _heat01);
+            return Color.Lerp(identity, heatTint, _heat01 * 0.75f);
         }
     }
 }

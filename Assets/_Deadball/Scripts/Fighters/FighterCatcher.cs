@@ -38,6 +38,25 @@ namespace Deadball.Fighters
         /// <summary>Seconds left on the active catch window, for AI timing and debug readouts.</summary>
         public float WindowRemaining => IsWindowActive ? Window.CurrentTime : 0f;
 
+        /// <summary>
+        /// Which tier the window is in right now (8.2).
+        /// </summary>
+        /// <remarks>
+        /// Measured from how much of the window is left rather than how much has elapsed, because the
+        /// timer counts down - the PERFECT band is the top slice of the remaining time.
+        /// </remarks>
+        [ShowInInspector, ReadOnly]
+        public ClampTier CurrentTier
+        {
+            get
+            {
+                if (!IsWindowActive) return ClampTier.None;
+
+                float elapsed = _config.CatchWindow - Window.CurrentTime;
+                return elapsed <= _config.PerfectClampBand ? ClampTier.Perfect : ClampTier.Late;
+            }
+        }
+
         int _slot;
         bool _enabled = true;
         bool _resolved;

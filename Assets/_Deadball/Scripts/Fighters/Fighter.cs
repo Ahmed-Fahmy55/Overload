@@ -52,6 +52,7 @@ namespace Deadball.Fighters
         public Transform HandAnchor => _thrower.HandAnchor;
         public bool CanTakeBall => IsInPlay && !_thrower.HasBall;
         public bool IsCatchWindowActive => _catcher.IsWindowActive;
+        public ClampTier ClampTier => _catcher.CurrentTier;
         public bool IsImmune => _knocks.IsImmune;
 
         IFighterInput _input;
@@ -135,6 +136,16 @@ namespace Deadball.Fighters
         }
 
         public void ReleaseBall() => _thrower.ClearBall();
+
+        public void ApplyStun(float seconds)
+        {
+            // A staggered runner drops whatever they were winding up, but keeps the core.
+            _thrower.CancelCharge();
+            _motor.Stagger(seconds);
+        }
+
+        /// <summary>A late clamp still resolved the window, so it must not cost a lockout (8.2).</summary>
+        public void NotifyClampResolved() => _catcher.NotifyCaught();
 
         public void TakeKnock(int knocks, Vector3 direction, float charge01) =>
             _knocks.TakeKnock(knocks, direction, charge01);

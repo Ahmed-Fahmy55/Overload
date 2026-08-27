@@ -21,5 +21,14 @@ namespace Deadball.Ball
 
         /// <summary>False once knocked out of the round.</summary>
         bool IsInPlay { get; }
+
+        /// <summary>Which clamp tier this target is currently offering (8.2).</summary>
+        Fighters.ClampTier ClampTier { get; }
+
+        /// <summary>Takes the thrower's stun after being beaten by a perfect clamp.</summary>
+        void ApplyStun(float seconds);
+
+        /// <summary>Closes the clamp window without a lockout, even when nothing was gained.</summary>
+        void NotifyClampResolved();
     }
 }

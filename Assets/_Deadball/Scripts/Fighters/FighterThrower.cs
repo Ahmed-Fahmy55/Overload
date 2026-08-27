@@ -67,7 +67,7 @@ namespace Deadball.Fighters
         /// <summary>Drives charge and release. Called once per frame with the raw button state.</summary>
         public void Tick(bool throwHeld)
         {
-            bool canCharge = _enabled && HasBall && !_motor.IsDodging;
+            bool canCharge = _enabled && HasBall && !_motor.IsDodging && !_motor.IsStunned;
 
             if (!canCharge)
             {

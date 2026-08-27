@@ -61,6 +61,15 @@ namespace Deadball.Ball
         /// <summary>Set by the round manager for sudden death (10).</summary>
         public bool OvertimeActive { get; set; }
 
+        /// <summary>
+        /// Set by Rally Heat. A critical core kills in one touch (9).
+        /// </summary>
+        /// <remarks>
+        /// Pushed in rather than pulled, so the ball keeps no reference to the heat system and stays
+        /// testable on its own.
+        /// </remarks>
+        public bool IsCritical { get; set; }
+
         public MatchConfig Config => _config;
 
         /// <summary>Renderer root, handed to presenters for tinting, flashing and squash.</summary>
@@ -187,30 +196,58 @@ namespace Deadball.Ball
             if (isThrower && Time.time - _throwTime < _config.SelfHitImmunity)
                 return;
 
-            if (target.IsCatchWindowActive && target.CanTakeBall)
+            Fighters.ClampTier tier = target.ClampTier;
+            if (tier != Fighters.ClampTier.None && target.CanTakeBall)
             {
-                Catch(target);
+                Clamp(target, tier);
                 return;
             }
 
             if (target.IsImmune)
                 return;
 
-            int knocks = _config.KnocksForHit(Charge01);
+            int knocks = _config.KnocksForHit(Charge01, IsCritical);
             Vector3 direction = _rb.linearVelocity.normalized;
             target.TakeKnock(knocks, direction, Charge01);
             GoLoose(transform.position);
         }
 
-        void Catch(IBallTarget target)
+        /// <summary>
+        /// Resolves a clamp into one of its two tiers (8.2).
+        /// </summary>
+        /// <remarks>
+        /// PERFECT locks the core on with its charge intact and staggers the thrower. LATE stops the
+        /// core dead but drops it loose at the clamper's feet - no possession, no charge, and the
+        /// heat starts bleeding. Both events carry the tier so heat and feedback can tell them apart.
+        /// </remarks>
+        void Clamp(IBallTarget target, Fighters.ClampTier tier)
         {
             _stallFailsafe.Stop();
+
+            int thrower = _throwerSlot;
+            float charge = Charge01;
+
             SetState(BallState.Caught);
+            EventBus<BallCaught>.Raise(new BallCaught(target.Slot, charge, transform.position, tier));
 
-            EventBus<BallCaught>.Raise(new BallCaught(target.Slot, Charge01, transform.position));
+            if (tier == Fighters.ClampTier.Late)
+            {
+                // Stopped, but not yours. Whoever reaches it first takes the tempo.
+                target.NotifyClampResolved();
+                GoLoose(target.CenterPosition);
+                return;
+            }
 
-            // The caught charge is preserved: catch a max-charge shot and you are holding one (8.5).
-            Attach(target, Charge01, wasCaught: true);
+            StunThrower(thrower);
+            Attach(target, charge, wasCaught: true);
+        }
+
+        void StunThrower(int throwerSlot)
+        {
+            if (throwerSlot < 0 || _config.PerfectClampStun <= 0f) return;
+
+            IBallTarget victim = BallTargetRegistry.Find(throwerSlot);
+            victim?.ApplyStun(_config.PerfectClampStun);
         }
 
         void Attach(IBallTarget target, float charge01, bool wasCaught)

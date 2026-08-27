@@ -80,11 +80,28 @@ namespace Deadball.Events
         public readonly float Charge01;
         public readonly Vector3 Position;
 
-        public BallCaught(int catcherSlot, float charge01, Vector3 position)
+        /// <summary>Which tier the clamp landed in (8.2). Only PERFECT adds heat.</summary>
+        public readonly Fighters.ClampTier Tier;
+
+        public BallCaught(int catcherSlot, float charge01, Vector3 position, Fighters.ClampTier tier)
         {
             CatcherSlot = catcherSlot;
             Charge01 = charge01;
             Position = position;
+            Tier = tier;
+        }
+    }
+
+    /// <summary>Raised when the core crosses the CRITICAL threshold in either direction (16.3).</summary>
+    public readonly struct CriticalStateChanged : IEvent
+    {
+        public readonly bool IsCritical;
+        public readonly float Heat;
+
+        public CriticalStateChanged(bool isCritical, float heat)
+        {
+            IsCritical = isCritical;
+            Heat = heat;
         }
     }
 

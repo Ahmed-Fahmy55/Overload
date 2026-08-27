@@ -170,13 +170,26 @@ namespace Deadball.Tests
             yield return ChargeFor(_input1, _config.MaxChargeTime * 1.2f);
             _input1.ThrowHeld = false;
 
-            // Press on the flash and you land comfortably inside the window (8.3). Driving the test
-            // off the cue rather than off a fixed number of frames is also what keeps it honest:
-            // if the cue stops firing at the right moment, this fails instead of quietly passing.
+            // Driving off the cue rather than a fixed frame count keeps this honest: if the cue
+            // stops firing at the right moment, this fails instead of quietly passing. The delay
+            // after it is required - see RallyHeatTests for why the alarm is not a "press now".
             yield return WaitUntil(() => flashes.Count > 0, 120, "the flash cue never fired");
 
+            // Pressed relative to the core's real arrival, not to the cue - see RallyHeatTests.
+            var rb = _ball.GetComponent<Rigidbody>();
+            yield return WaitUntil(() =>
+            {
+                if (_ball.State != BallState.Flying) return false;
+                Vector3 to = _p2.CenterPosition - _ball.transform.position;
+                float distance = to.magnitude - _p2.CatchRadius;
+                float closing = Vector3.Dot(rb.linearVelocity, to.normalized);
+                return closing > 0.01f && distance / closing <= 0.08f;
+            }, 250, "the ball never closed on the target");
+
             _input2.PressCatch();
-            yield return Frames(2);
+
+            // One frame for Fighter.Update to consume the press and open the window.
+            yield return null;
             Assert.That(_p2.IsCatchWindowActive, Is.True);
 
             yield return WaitUntil(() => _ball.State != BallState.Flying, 60, "the ball never arrived");
