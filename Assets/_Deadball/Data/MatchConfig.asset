@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c3a8ff4a6be2ff4bbe8cb7cbd64e09c, type: 3}
+  m_Name: MatchConfig
+  m_EditorClassIdentifier: Deadball::Deadball.Config.MatchConfig
+  _moveSpeed: 6
+  _holdingSpeedMultiplier: 0.8
+  _turnSpeed: 900
+  _dodgeSpeed: 12
+  _dodgeDuration: 0.25
+  _dodgeInvulnerability: 0.2
+  _dodgeCooldown: 1.2
+  _maxChargeTime: 1.2
+  _minThrowSpeed: 12
+  _maxThrowSpeed: 28
+  _aimSnapAngle: 10
+  _ballGravity: 0.9
+  _selfHitImmunity: 0.4
+  _catchWindow: 0.3
+  _catchFlashLead: 0.35
+  _catchLockout: 0.6
+  _wallBounceRetention: 0.85
+  _bouncesBeforeLoose: 4
+  _looseSpeedThreshold: 3
+  _stallFailsafe: 5
+  _pickupRadius: 0.9
+  _knocksToKo: 2
+  _instantKoCharge: 0.95
+  _roundDuration: 60
+  _roundWinsToTakeMatch: 2
+  _roundIntroDuration: 2
+  _overtimeEnabled: 1
+  _overtimeSpeedBonus: 0.25
+  _overtimeKnocksRemaining: 1
+  _arenaSize: 20
+  _comebackHandicap: 2
