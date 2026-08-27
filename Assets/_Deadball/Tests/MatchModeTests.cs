@@ -1,5 +1,8 @@
 using System.Collections;
+using Core.Events;
 using Deadball.AI;
+using Deadball.Events;
+using Deadball.HUD;
 using Deadball.Fighters;
 using Deadball.Match;
 using NUnit.Framework;
@@ -83,6 +86,34 @@ namespace Deadball.Tests
                 Is.Zero, "No house runner belongs in Local Versus.");
         }
 
+        [UnityTest]
+        public IEnumerator MatchEndCard_AppearsAfterTheBlackout()
+        {
+            _settings.Mode = MatchMode.LocalVersus;
+
+            yield return LoadArena();
+            yield return WaitForFrames(2);
+
+            var card = Object.FindFirstObjectByType<MatchEndScreen>(FindObjectsInactive.Include);
+            Assert.That(card, Is.Not.Null, "Every arena needs the match-end card (21).");
+            Assert.That(card.IsShowing, Is.False, "The card must stay hidden during a match.");
+
+            EventBus<MatchEnded>.Raise(new MatchEnded(0));
+
+            // It is deliberately delayed so the blackout lands first, so it must NOT be up yet.
+            yield return WaitForFrames(2);
+            Assert.That(card.IsShowing, Is.False,
+                "The card should wait for the blackout rather than stepping on it (3).");
+
+            yield return WaitUnscaled(2.0f);
+
+            Assert.That(card.IsShowing, Is.True, "The card must appear once the delay has passed.");
+
+            var group = card.GetComponent<CanvasGroup>();
+            Assert.That(group.alpha, Is.EqualTo(1f).Within(0.001f), "It has to actually be visible.");
+            Assert.That(group.blocksRaycasts, Is.True, "Its buttons have to be clickable.");
+        }
+
         // ---------------------------------------------------------------- helpers
 
         static T Load<T>(string path) where T : Object
@@ -106,6 +137,13 @@ namespace Deadball.Tests
 #endif
             yield return null;
             StripFeedbacks();
+        }
+
+        static IEnumerator WaitUnscaled(float seconds)
+        {
+            // Unscaled, because the KO slow-mo is running and the card is timed against real time.
+            float until = Time.unscaledTime + seconds;
+            while (Time.unscaledTime < until) yield return null;
         }
 
         static IEnumerator WaitForFrames(int frames)
