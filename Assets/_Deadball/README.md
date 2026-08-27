@@ -38,17 +38,21 @@ ring, held-ball tint and trail all read from here.
 If the catch feels bad, adjust in this order, one at a time (§8.7): widen the active window, push
 the flash earlier, shorten the lockout. Never slow the ball down.
 
-## Rebuilding the arena
+## Changing the arena
 
-`Deadball > Setup > Run Full Day 1 Setup` regenerates the scene, the fighter prefab and the
-greybox materials. It is idempotent — it reuses the tuning assets, so a rebuild does not undo a
-tuning pass.
-
-From the command line:
+The arena, the fighter prefab and the greybox materials are committed assets. There is no editor
+setup script that regenerates them — the scene is the source of truth. Edit it in the editor, or
+drive the editor from the Unity CLI:
 
 ```bash
-unity run "D:/Unity/Zanga/Club Jam" -- -nographics -executeMethod Deadball.Editor.DeadballBatch.RunDay1Setup
+unity command create_gameobject -- --name Prop_Crate --primitive cube
+unity command set_transform -- --target Prop_Crate --position "[3,0.5,-4]" --scale "[2,1,2]"
+unity command set_layer -- --target Prop_Crate --layer DB_Arena
+unity command save_scene
 ```
+
+Vector parameters take a JSON array in quotes; a bare `-4` is parsed as a flag. `unity list` names
+every command, and `unity list --format json` prints their full parameter schemas.
 
 ## Tests
 
