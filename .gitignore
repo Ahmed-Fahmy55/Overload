@@ -131,3 +131,7 @@ InitTestScene*.unity*
 
 # Stray hooks directory from a Windows /dev/null redirect
 /dev/
+
+# Music tracks: audio source material, not code (see the asset-pack rule above).
+/Assets/_Deadball/Audio/*.mp3
+/Assets/_Deadball/Audio/*.mp3.meta

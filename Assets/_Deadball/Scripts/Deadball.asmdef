@@ -6,7 +6,8 @@
         "Zone8.ImprovedTimers",
         "Unity.InputSystem",
         "UnityEngine.UI",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "BroAudio"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -42,6 +42,22 @@ namespace Deadball.Events
         }
     }
 
+    /// <summary>Raised the moment a holder begins spinning the core up (19: spin-up loop).</summary>
+    public readonly struct ChargeStarted : IEvent
+    {
+        public readonly int Slot;
+
+        public ChargeStarted(int slot) => Slot = slot;
+    }
+
+    /// <summary>Raised when a charge ends without a throw - a dodge cancel, or losing the core.</summary>
+    public readonly struct ChargeCancelled : IEvent
+    {
+        public readonly int Slot;
+
+        public ChargeCancelled(int slot) => Slot = slot;
+    }
+
     /// <summary>
     /// Layer 3 of the catch telegraph (GDD section 8.2) - the "press now" beat.
     /// </summary>

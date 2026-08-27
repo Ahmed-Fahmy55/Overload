@@ -1,6 +1,8 @@
 using System;
+using Core.Events;
 using Deadball.Ball;
 using Deadball.Config;
+using Deadball.Events;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -77,6 +79,9 @@ namespace Deadball.Fighters
             {
                 // A ball that arrived pre-charged from a catch keeps that charge, so a fresh press
                 // resumes from it rather than starting over (8.5).
+                if (!IsCharging)
+                    EventBus<ChargeStarted>.Raise(new ChargeStarted(_slot));
+
                 IsCharging = true;
                 _motor.Rooted = true;
                 SetCharge(Charge01 + Time.deltaTime / _config.MaxChargeTime);
@@ -123,6 +128,7 @@ namespace Deadball.Fighters
             IsCharging = false;
             _motor.Rooted = false;
             SetCharge(0f);
+            EventBus<ChargeCancelled>.Raise(new ChargeCancelled(_slot));
         }
 
         public void SetEnabled(bool enabled)

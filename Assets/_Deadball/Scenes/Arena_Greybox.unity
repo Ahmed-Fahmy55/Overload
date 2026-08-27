@@ -903,8 +903,7 @@ GameObject:
   - component: {fileID: 284664136}
   - component: {fileID: 284664137}
   - component: {fileID: 284664141}
-  - component: {fileID: 284664140}
-  - component: {fileID: 284664139}
+  - component: {fileID: 284664144}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -960,125 +959,6 @@ MonoBehaviour:
   _gamepadScheme: Gamepad
   _keyboardSchemeP1: KeyboardP1
   _keyboardSchemeP2: KeyboardP2
---- !u!114 &284664139
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 284664135}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44e3c6e5cc78ba247a2f3162a2328a53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Deadball::Deadball.Presentation.MatchAudioCues
-  _throwWhoosh: {fileID: 0}
-  _flashPing: {fileID: 0}
-  _catchThunk: {fileID: 0}
-  _knockImpact: {fileID: 0}
-  _throwVolume: 0.7
-  _pingVolume: 1
-  _thunkVolume: 1.4
-  _knockVolume: 1.1
-  _minThrowPitch: 0.85
-  _maxThrowPitch: 1.35
---- !u!82 &284664140
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 284664135}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 0
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
 --- !u!114 &284664141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1156,6 +1036,67 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &284664144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 284664135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84142060ce059e649acc080089dab02c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Deadball::Deadball.Presentation.OverloadAudioDirector
+  _spinUp:
+    _entity: {fileID: 11400000, guid: e957cd97e6799b449a295aaff25d456b, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _launch:
+    _entity: {fileID: 11400000, guid: 231d9610822a5134ab50302f3f067af0, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _flashCueAlarm:
+    _entity: {fileID: 11400000, guid: 4690179941565e34d993b1e9aee704b9, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _clamp:
+    _entity: {fileID: 11400000, guid: 99bfe173ece2c3a48b2ddd6a876cc084, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _knock:
+    _entity: {fileID: 11400000, guid: 255a09001d7f1e34186873679c60f461, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _derez:
+    _entity: {fileID: 11400000, guid: ed4c57ed5a115a1479844cfdc3172f14, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _music:
+    _entity: {fileID: 11400000, guid: 292cf34677d58414688286b7c7252b59, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 0}
+  _heatHum:
+    _entity: {fileID: 11400000, guid: 1026ff17c416cab4c9b396bef1039abc, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _criticalAlarm:
+    _entity: {fileID: 11400000, guid: 7c6762323defce4409f5e76ec7dbd2d0, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _deckRumble:
+    _entity: {fileID: 11400000, guid: 91f163f8074bb2b4b9ce67c1bb9b4428, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 284664135}
+  _clampVolume: 1.5
+  _alarmVolume: 1.2
+  _minLaunchPitch: 0.85
+  _maxLaunchPitch: 1.35
+  _minHumPitch: 0.8
+  _maxHumPitch: 1.6
+  _knockDuckVolume: 0.35
+  _knockDuckCutoff: 700
+  _knockDuckFade: 0.15
 --- !u!1 &286034294
 GameObject:
   m_ObjectHideFlags: 0
@@ -1513,7 +1454,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 134217527
 --- !u!114 &453016069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3164,6 +3105,7 @@ MonoBehaviour:
   _grabTrigger: {fileID: 1994621294}
   _throwLoft: 0.04
   _restHeight: 0.25
+  _looseClearance: 0.2
 --- !u!4 &1851174283
 Transform:
   m_ObjectHideFlags: 0
@@ -3795,5 +3737,5 @@ SceneRoots:
   - {fileID: 1851174283}
   - {fileID: 232757973}
   - {fileID: 1707466010}
-  - {fileID: 284664143}
   - {fileID: 453016071}
+  - {fileID: 284664143}
