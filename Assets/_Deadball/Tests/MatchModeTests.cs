@@ -1,6 +1,7 @@
 using System.Collections;
 using Core.Events;
 using Deadball.AI;
+using Deadball.Config;
 using Deadball.Events;
 using Deadball.HUD;
 using Deadball.Fighters;
@@ -112,6 +113,33 @@ namespace Deadball.Tests
             var group = card.GetComponent<CanvasGroup>();
             Assert.That(group.alpha, Is.EqualTo(1f).Within(0.001f), "It has to actually be visible.");
             Assert.That(group.blocksRaycasts, Is.True, "Its buttons have to be clickable.");
+        }
+
+        [UnityTest]
+        public IEnumerator CoreCrossesTheDeckInTheReadableWindow()
+        {
+            yield return LoadArena();
+            yield return WaitForFrames(2);
+
+            var core = Object.FindFirstObjectByType<Deadball.Ball.BallController>();
+            var arena = Object.FindFirstObjectByType<ArenaReferences>();
+            MatchConfig config = core.Config;
+
+            // The deck the core actually has to cross, not the fallback in the config.
+            float span = Mathf.Max(arena.Size.x, arena.Size.y);
+
+            float slowest = span / config.MinThrowSpeed;
+            float fastest = span / config.MaxThrowSpeed;
+
+            // Section 8.3: the core crosses the deck in 0.7s-1.6s, and that window is what makes the
+            // alarm cue learnable. The Spine's long axis is allowed to run to ~2.0s (15.2). Enlarging
+            // an arena without rescaling throw speed silently breaks this - it reads to a player as
+            // "everything is easy to dodge", which is exactly how it was found.
+            Assert.That(fastest, Is.GreaterThan(0.4f),
+                $"A max-charge throw crosses {span}m in {fastest:0.00}s - too fast to react to.");
+            Assert.That(slowest, Is.LessThan(2.2f),
+                $"A min-charge throw crosses {span}m in {slowest:0.00}s. Past ~2s the core is a "
+                + "lob nobody can fail to read, and the whole clamp game goes slack.");
         }
 
         // ---------------------------------------------------------------- helpers

@@ -43,6 +43,9 @@ namespace Deadball.HUD
         [Tooltip("Every Image that should show the chosen deck - the solo and versus panels each have one.")]
         [SerializeField] Image[] _arenaCardTargets;
 
+        [Tooltip("The two claim slots. Versus will not start until both are held (21.3).")]
+        [SerializeField] VersusJoinPanel _versusJoin;
+
         [Title("Runtime"), ShowInInspector, ReadOnly]
         public int SelectedTier { get; private set; }
 
@@ -152,6 +155,11 @@ namespace Deadball.HUD
                 Debug.LogError("[Overload] No arena selected.", this);
                 return;
             }
+
+            // Two humans means two devices. Starting without both claimed drops a player onto the
+            // deck with nothing driving them, which reads as a broken build rather than a mistake.
+            if (_settings.Mode == MatchMode.LocalVersus && _versusJoin != null && !_versusJoin.IsReady)
+                return;
 
             SceneManager.LoadScene(_settings.ArenaScene);
         }

@@ -149,6 +149,12 @@ namespace Deadball.Match
                 fighter.PrepareForRound(pos, rot, knocksAllowed);
             }
 
+            // Teleport writes the transform, but the physics broadphase is only refreshed on the
+            // next FixedUpdate. Without this the ball's grab trigger tests overlap against where the
+            // runners *were*, so a runner who happened to be near the centre last round picks the
+            // core up the instant it respawns - from across the deck.
+            Physics.SyncTransforms();
+
             _ball.ArenaSize = _arena.Size;
             _ball.ResetForRound(_arena.Centre);
         }

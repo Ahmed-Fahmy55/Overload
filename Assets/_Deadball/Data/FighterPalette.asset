@@ -16,7 +16,7 @@ MonoBehaviour:
   - Body: {r: 0.15, g: 0.85, b: 1, a: 1}
     DisplayName: P1
     Trail: {r: 0.4, g: 0.95, b: 1, a: 1}
-  - Body: {r: 1, g: 0.5, b: 0.1, a: 1}
+  - Body: {r: 1, g: 0.16, b: 0.9, a: 1}
     DisplayName: P2
-    Trail: {r: 1, g: 0.65, b: 0.2, a: 1}
+    Trail: {r: 1, g: 0.45, b: 0.95, a: 1}
   _looseBallColour: {r: 1, g: 0.95, b: 0.75, a: 1}

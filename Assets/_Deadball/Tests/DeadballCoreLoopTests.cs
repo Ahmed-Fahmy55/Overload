@@ -55,6 +55,11 @@ namespace Deadball.Tests
 
             // The join flow and the match director would fight the test for control of the fighters,
             // and hitstop would freeze the clock the assertions are waiting on.
+            // The arena's mode bootstrap reads the shared MatchSettings asset and can activate the
+            // solo roster, whose spawn coroutine lands mid-test and adds a house runner this fixture
+            // never asked for. Tests must not depend on the mode a developer last left set.
+            StripSceneDriver<Deadball.Match.MatchModeBootstrap>();
+            StripSceneDriver<Deadball.AI.SoloRoster>();
             StripSceneDriver<FighterJoinManager>();
             StripSceneDriver<PlayerInputManager>();
             StripSceneDriver<MatchManager>();

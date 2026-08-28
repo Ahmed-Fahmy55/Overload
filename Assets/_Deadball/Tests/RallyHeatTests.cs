@@ -47,6 +47,11 @@ namespace Deadball.Tests
 #endif
             yield return null;
 
+            // The arena's mode bootstrap reads the shared MatchSettings asset and can activate the
+            // solo roster, whose spawn coroutine lands mid-test and adds a house runner this fixture
+            // never asked for. Tests must not depend on the mode a developer last left set.
+            StripSceneDriver<Deadball.Match.MatchModeBootstrap>();
+            StripSceneDriver<Deadball.AI.SoloRoster>();
             StripSceneDriver<FighterJoinManager>();
             StripSceneDriver<PlayerInputManager>();
             StripSceneDriver<MatchManager>();

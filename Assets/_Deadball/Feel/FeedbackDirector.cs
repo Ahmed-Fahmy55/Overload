@@ -55,6 +55,9 @@ namespace Deadball.Feel
         [Tooltip("Vent puff under a dodging runner. Moved to the runner.")]
         public MMF_Player Dodge;
 
+        const float MinPunch = 0.55f;
+        const float MaxPunch = 1.6f;
+
         EventBinding<ChargeStarted> _chargeStarted;
         EventBinding<BallThrown> _thrown;
         EventBinding<BallFlashCue> _flash;
@@ -68,10 +71,10 @@ namespace Deadball.Feel
         void OnEnable()
         {
             _chargeStarted = new EventBinding<ChargeStarted>(() => Play(SpinUp));
-            _thrown = new EventBinding<BallThrown>(() => Play(Launch));
+            _thrown = new EventBinding<BallThrown>(evt => Play(Launch, evt.Charge01));
             _flash = new EventBinding<BallFlashCue>(() => Play(Alarm));
             _caught = new EventBinding<BallCaught>(OnClamped);
-            _knocked = new EventBinding<FighterKnocked>(() => Play(Knock));
+            _knocked = new EventBinding<FighterKnocked>(evt => Play(Knock, evt.Charge01));
             _knockedOut = new EventBinding<FighterKnockedOut>(() => Play(KO));
 
             EventBus<ChargeStarted>.Register(_chargeStarted);
@@ -133,6 +136,20 @@ namespace Deadball.Feel
         static void Play(MMF_Player player)
         {
             if (player != null) player.PlayFeedbacks();
+        }
+
+        /// <summary>Plays a feedback with its punch scaled by how hard the throw was (22).</summary>
+        /// <remarks>
+        /// A soft lob and a max-charge slam used to shake the screen identically, which flattened the
+        /// one piece of information the shake could carry. Intensity is kept above zero so a nudge
+        /// still registers, and allowed above one so max charge genuinely hits harder.
+        /// </remarks>
+        static void Play(MMF_Player player, float charge01)
+        {
+            if (player == null) return;
+
+            float intensity = Mathf.Lerp(MinPunch, MaxPunch, Mathf.Clamp01(charge01));
+            player.PlayFeedbacks(player.transform.position, intensity);
         }
     }
 }

@@ -58,6 +58,12 @@ namespace Deadball.Tests
 
             // The device-driven join flow has nothing to join in batch, and hitstop would stop the
             // clock the round timer runs on.
+            // The arena now carries a mode bootstrap that reads the shared MatchSettings asset.
+            // Left alone it activates the solo roster, whose spawn coroutine lands mid-test and
+            // drops a house runner into a fixture that already built its own. Whatever mode a
+            // developer last left the project in must not change what these tests measure.
+            Strip<Deadball.Match.MatchModeBootstrap>();
+            Strip<Deadball.AI.SoloRoster>();
             Strip<FighterJoinManager>();
             Strip<PlayerInputManager>();
             Strip<HitstopService>();

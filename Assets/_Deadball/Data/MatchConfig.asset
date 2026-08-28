@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c3a8ff4a6be2ff4bbe8cb7cbd64e09c, type: 3}
   m_Name: MatchConfig
   m_EditorClassIdentifier: Deadball::Deadball.Config.MatchConfig
-  _moveSpeed: 6
+  _moveSpeed: 9
   _holdingSpeedMultiplier: 0.8
   _turnSpeed: 900
-  _dodgeSpeed: 12
+  _dodgeSpeed: 18
   _dodgeDuration: 0.25
   _dodgeInvulnerability: 0.2
   _dodgeCooldown: 1.2
   _maxChargeTime: 1.2
-  _minThrowSpeed: 12
-  _maxThrowSpeed: 28
+  _minThrowSpeed: 18
+  _maxThrowSpeed: 42
   _aimSnapAngle: 10
   _ballGravity: 0.9
   _selfHitImmunity: 0.4
@@ -30,7 +30,7 @@ MonoBehaviour:
   _catchLockout: 0.6
   _wallBounceRetention: 0.85
   _bouncesBeforeLoose: 4
-  _looseSpeedThreshold: 3
+  _looseSpeedThreshold: 4.5
   _stallFailsafe: 5
   _pickupRadius: 0.9
   _knocksToKo: 2
@@ -41,5 +41,5 @@ MonoBehaviour:
   _overtimeEnabled: 1
   _overtimeSpeedBonus: 0.25
   _overtimeKnocksRemaining: 1
-  _arenaSize: 20
+  _arenaSize: 30
   _comebackHandicap: 2
