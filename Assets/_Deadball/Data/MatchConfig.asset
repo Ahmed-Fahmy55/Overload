@@ -17,17 +17,23 @@ MonoBehaviour:
   _turnSpeed: 900
   _dodgeSpeed: 18
   _dodgeDuration: 0.25
-  _dodgeInvulnerability: 0.2
-  _dodgeCooldown: 1.2
+  _dodgeInvulnerability: 0.1
+  _dodgeCooldown: 2
   _maxChargeTime: 1.2
   _minThrowSpeed: 18
   _maxThrowSpeed: 42
   _aimSnapAngle: 10
   _ballGravity: 0.9
-  _selfHitImmunity: 0.4
-  _catchWindow: 0.3
-  _catchFlashLead: 0.35
-  _catchLockout: 0.6
+  _selfHitImmunity: 0.3
+  _catchWindow: 0.2
+  _catchFlashLead: 0.3
+  _perfectClampBand: 0.12
+  _perfectClampStun: 1
+  _catchLockout: 1
+  _heatPerPerfectClamp: 22
+  _heatDecayPerSecond: 25
+  _criticalHeat: 80
+  _maxHeat: 100
   _wallBounceRetention: 0.85
   _bouncesBeforeLoose: 4
   _looseSpeedThreshold: 4.5

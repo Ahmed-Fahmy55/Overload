@@ -1,6 +1,8 @@
 using System.Collections;
+using Core.Events;
 using Deadball.AI;
 using Deadball.Ball;
+using Deadball.Events;
 using Deadball.Config;
 using Deadball.Fighters;
 using Deadball.Input;
@@ -208,6 +210,110 @@ namespace Deadball.Tests
             {
                 Object.DestroyImmediate(wall);
             }
+        }
+
+        [UnityTest]
+        public IEnumerator ThrowsEvenWhenTheOpponentSimplyRunsAway()
+        {
+            // A holder moves at 80% speed, so it can never close on someone sprinting away. Before
+            // the chase cap the runner would follow forever and never let go of the core.
+            var profile = Load(GhostPath);
+            float rangeAtThrow = -1f;
+
+            var binding = new EventBinding<BallThrown>(() =>
+            {
+                Vector3 gap = _human.transform.position - _house.transform.position;
+                gap.y = 0f;
+                if (rangeAtThrow < 0f) rangeAtThrow = gap.magnitude;
+            });
+            EventBus<BallThrown>.Register(binding);
+
+            try
+            {
+                // Far enough apart that the runner cannot already be inside its throwing range.
+                // Positioning happens first: PrepareForRound drops whatever the runner is holding,
+                // so handing over the core before this would simply throw it on the floor.
+                _house.PrepareForRound(new Vector3(-13f, 0f, 0f), Quaternion.LookRotation(Vector3.right));
+                _human.PrepareForRound(new Vector3(13f, 0f, 0f), Quaternion.LookRotation(Vector3.right));
+                _house.SetControlEnabled(true);
+                _human.SetControlEnabled(true);
+                yield return null;
+
+                yield return GiveCoreTo(_house);
+
+                // Keep the human running for the far wall so the gap only ever grows.
+                yield return null;
+
+                _humanInput.Move = new Vector2(1f, 0f);
+
+                // Give up chasing, then still wind up: the throw only fires on release, so the
+                // budget has to cover the cap plus a full charge.
+                float budget = profile.MaxCloseSeconds + _config.MaxChargeTime + 1.0f;
+                yield return WaitUntil(() => rangeAtThrow >= 0f, budget,
+                    $"the house runner never threw - it chased for {budget:0.0}s");
+
+                // Strictly outside the range it would normally close to, so this can only pass if
+                // the runner gave up chasing and committed - not if it simply got there.
+                Assert.That(rangeAtThrow, Is.GreaterThan(profile.PreferredRange * 1.15f),
+                    "It should have committed to a throw from out of range rather than closing "
+                    + "first, which against a fleeing opponent it can never do.");
+            }
+            finally
+            {
+                EventBus<BallThrown>.Deregister(binding);
+                _humanInput.Move = Vector2.zero;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator RoutesAroundAPropToReachTheCore()
+        {
+            // Reactive steering stalls here: with a coolant tank directly between runner and core,
+            // every heading in the probe fan is blocked, so it pushed into the prop forever. The
+            // NavMesh path query is what makes the detour possible.
+            Collider prop = FindProp();
+            Assert.That(prop, Is.Not.Null, "The greybox deck should have props to route around.");
+
+            Vector3 centre = prop.bounds.center;
+            centre.y = 0f;
+            float reach = Mathf.Max(prop.bounds.extents.x, prop.bounds.extents.z) + 2.5f;
+
+            // Runner on one side, core directly opposite, prop squarely in between.
+            _house.PrepareForRound(centre + Vector3.forward * reach, Quaternion.LookRotation(Vector3.back));
+            _house.SetControlEnabled(true);
+            yield return null;
+
+            _core.GoLoose(centre - Vector3.forward * reach);
+            yield return null;
+
+            float start = FlatDistance(_house.transform.position, _core.transform.position);
+
+            yield return WaitUntil(
+                () => _core.HolderSlot == _house.Slot
+                    || FlatDistance(_house.transform.position, _core.transform.position) < 1.5f,
+                8f,
+                "the runner never got around the prop to the core");
+
+            float end = FlatDistance(_house.transform.position, _core.transform.position);
+            Assert.That(end, Is.LessThan(start - 1f), "It has to actually close, not just wander.");
+        }
+
+        static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            a.y = 0f;
+            b.y = 0f;
+            return Vector3.Distance(a, b);
+        }
+
+        static Collider FindProp()
+        {
+            foreach (Collider col in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
+            {
+                if (col.isTrigger) continue;
+                if (!col.name.StartsWith("Prop_") && !col.name.StartsWith("Pillar_")) continue;
+                return col;
+            }
+            return null;
         }
 
         // ---------------------------------------------------------------- helpers

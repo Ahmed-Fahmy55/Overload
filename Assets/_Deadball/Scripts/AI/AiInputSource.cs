@@ -3,6 +3,7 @@ using Deadball.Fighters;
 using Deadball.Match;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Deadball.AI
 {
@@ -61,6 +62,12 @@ namespace Deadball.AI
         [Tooltip("Roughly the runner's shoulder width, so it does not clip corners.")]
         [SuffixLabel("m", true), MinValue(0.05f), SerializeField] float _probeRadius = 0.45f;
 
+        [Tooltip("How often the path is re-queried while chasing something that moves.")]
+        [SuffixLabel("s", true), MinValue(0.02f), SerializeField] float _repathInterval = 0.15f;
+
+        [Tooltip("Re-query early if the goal has moved further than this since the last path.")]
+        [SuffixLabel("m", true), MinValue(0.1f), SerializeField] float _repathDistance = 1.5f;
+
         [Tooltip("What counts as an obstacle. Runners and the core are always ignored.")]
         [SerializeField] LayerMask _obstacleMask = ~0;
 
@@ -100,6 +107,11 @@ namespace Deadball.AI
         float _clampPressWindow;
         int _decidedForThrowId = -1;
         Vector2 _evadeBias = Vector2.up;
+        NavMeshPath _path;
+        Vector3 _pathHeading;
+        Vector3 _pathTarget;
+        float _nextPathAt;
+        float _aimingSince = -1f;
 
         bool CoreIsCritical => _heat != null && _heat.IsCritical;
 
@@ -134,6 +146,7 @@ namespace Deadball.AI
             _dodgeQueued = false;
             _clampQueued = false;
             _decidedForThrowId = -1;
+            _aimingSince = -1f;
         }
 
         AiState ChooseState()
@@ -147,6 +160,8 @@ namespace Deadball.AI
 
         void Act()
         {
+            if (State != AiState.Aim) _aimingSince = -1f;
+
             switch (State)
             {
                 case AiState.Hunt: Hunt(); break;
@@ -172,6 +187,65 @@ namespace Deadball.AI
         /// works, which keeps the detour looking like a decision rather than a random turn.
         /// </para>
         /// </remarks>
+        /// <summary>
+        /// A heading toward <paramref name="target"/> that goes around the deck's geometry.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <see cref="Steer"/> is reactive: it probes a few angles and picks one that is clear. That
+        /// works for clipping a corner but not for routing around a coolant tank, where every
+        /// heading within its fan is blocked and the runner stalls against the prop while the core
+        /// sits on the far side. A path query solves the whole problem instead of a local slice.
+        /// </para>
+        /// <para>
+        /// Only the query is used - there is no NavMeshAgent moving the transform. The runner is
+        /// still driven entirely through <see cref="IFighterInput"/>, so 13.1 holds: the bot can
+        /// only press what a player can press, and it moves at exactly the speeds a player does.
+        /// </para>
+        /// <para>
+        /// Falls back to the reactive steer when no path exists, so an unbaked scene degrades to the
+        /// previous behaviour rather than to a runner that refuses to move.
+        /// </para>
+        /// </remarks>
+        Vector3 PathTo(Vector3 target)
+        {
+            Vector3 direct = target - transform.position;
+            direct.y = 0f;
+
+            // A clear line needs no detour, and skipping the query keeps the common case cheap.
+            if (direct.sqrMagnitude < 0.01f || IsClear(direct.normalized))
+                return direct;
+
+            _path ??= new NavMeshPath();
+
+            // Re-queried on a timer rather than per frame: the corner we are walking toward does
+            // not change often, and the delay is far shorter than the reaction delay anyway.
+            bool stale = Time.time >= _nextPathAt
+                || (target - _pathTarget).sqrMagnitude > _repathDistance * _repathDistance;
+
+            if (stale)
+            {
+                _nextPathAt = Time.time + _repathInterval;
+                _pathTarget = target;
+                _pathHeading = Vector3.zero;
+
+                if (NavMesh.CalculatePath(transform.position, target, NavMesh.AllAreas, _path)
+                    && _path.status != NavMeshPathStatus.PathInvalid
+                    && _path.corners.Length > 1)
+                {
+                    // corners[0] is where we already are; corners[1] is the next place worth being.
+                    Vector3 corner = _path.corners[1] - transform.position;
+                    corner.y = 0f;
+                    if (corner.sqrMagnitude > 0.0001f) _pathHeading = corner.normalized;
+                }
+            }
+
+            if (_pathHeading.sqrMagnitude > 0.0001f)
+                return _pathHeading * direct.magnitude;
+
+            return Steer(direct);
+        }
+
         Vector3 Steer(Vector3 desired)
         {
             Vector3 flat = new(desired.x, 0f, desired.z);
@@ -228,7 +302,7 @@ namespace Deadball.AI
             // A slight overshoot past the core stops the approach looking like a nav-mesh agent
             // gliding onto a waypoint (13.2).
             Vector3 overshoot = toCore.normalized * 0.6f;
-            Move = Flatten(Steer(toCore + overshoot));
+            Move = Flatten(PathTo(_core.transform.position + overshoot));
         }
 
         void Aim()
@@ -245,9 +319,16 @@ namespace Deadball.AI
 
             // Close to preferred range first; once there, root and wind up. Facing follows Move even
             // while rooted, so aiming and moving use the same channel a player has (7.3).
-            if (range > _profile.PreferredRange * 1.15f)
+            if (_aimingSince < 0f) _aimingSince = Time.time;
+
+            // Holding the core costs 20% speed, so a runner that insists on closing before it will
+            // throw can never catch an opponent who simply runs - it chases until the round ends.
+            // Past the cap it throws from wherever it is, which is also what a player does.
+            bool chasedTooLong = Time.time - _aimingSince > _profile.MaxCloseSeconds;
+
+            if (range > _profile.PreferredRange * 1.15f && !chasedTooLong)
             {
-                Move = Flatten(Steer(toOpponent));
+                Move = Flatten(PathTo(opponent.CenterPosition));
                 ThrowHeld = false;
                 return;
             }

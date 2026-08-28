@@ -53,6 +53,11 @@ namespace Deadball.AI
 
         [Title("Feel", "13.4 - a frame-perfect bot feels like cheating even when it is fair")]
         [MinMaxSlider(0.05f, 0.6f, true), LabelText("Reaction Delay")]
+        [Tooltip("How long the runner will chase before throwing from wherever it stands. "
+            + "A holder moves at 80% speed, so it can never close on a fleeing opponent - without "
+            + "this cap it chases forever and never lets go of the core.")]
+        [SuffixLabel("s", true), MinValue(0.2f), SerializeField] float _maxCloseSeconds = 1.5f;
+
         [SerializeField] Vector2 _reactionDelay = new(0.15f, 0.25f);
 
         [SuffixLabel("s", true), MinValue(0.1f), LabelText("Dodge Interval")]
@@ -75,6 +80,7 @@ namespace Deadball.AI
         public float ChargeJitter => _chargeJitter;
         public float AimErrorDegrees => _aimErrorDegrees;
         public float PreferredRange => _preferredRange;
+        public float MaxCloseSeconds => _maxCloseSeconds;
 
         public float NextReactionDelay() => Random.Range(_reactionDelay.x, _reactionDelay.y);
         public float NextDodgeInterval() => Random.Range(_dodgeInterval.x, _dodgeInterval.y);
