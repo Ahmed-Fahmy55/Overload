@@ -19,7 +19,8 @@ MonoBehaviour:
   _chargeTarget: 0.4
   _chargeJitter: 0.22
   _aimErrorDegrees: 9
-  _preferredRange: 12.0
+  _preferredRange: 12
+  _maxCloseSeconds: 1.5
   _reactionDelay: {x: 0.22, y: 0.32}
   _dodgeInterval: {x: 0.8, y: 1.8}
   _criticalClampMultiplier: 0.5
