@@ -173,7 +173,12 @@ namespace Deadball.Input
             _fighters.Add(fighter);
             FighterJoined?.Invoke(fighter);
 
-            if (!IsReady) return;
+            // Only on the transition into a full roster. This used to be "if (!IsReady) return",
+            // which passes for the third join and every one after it - and RosterComplete is wired
+            // to MatchManager.StartMatch, so a late join wiped the score and restarted the match.
+            // With two pads and a keyboard in the room one device is always unpaired, and its South
+            // button is the dodge button, so it read as "dodge restarts the round".
+            if (_fighters.Count != _requiredPlayers) return;
 
             _manager.DisableJoining();
 

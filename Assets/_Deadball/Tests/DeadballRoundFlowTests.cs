@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Reflection;
 using Core.Events;
 using Deadball.Ball;
 using Deadball.Config;
@@ -89,7 +90,7 @@ namespace Deadball.Tests
         {
             using var starting = new Recorder<RoundStarting>();
 
-            _match.StartMatch();
+            _match.Rematch();
             yield return null;
 
             Assert.That(starting.Count, Is.EqualTo(1), "Round one must announce itself.");
@@ -170,11 +171,64 @@ namespace Deadball.Tests
             Assert.That(flat.magnitude, Is.LessThan(0.5f), "The ball spawns dead centre (10).");
         }
 
+        [UnityTest]
+        public IEnumerator ARosterEventMidMatch_DoesNotRestartTheMatch()
+        {
+            // RosterComplete is wired to StartMatch, and the join manager used to re-raise it on
+            // every join once the roster was already full. With two pads and a keyboard one device
+            // is always unpaired, and its South button is also the dodge button - so pressing dodge
+            // joined it, restarted the match and wiped the score mid-round.
+            yield return StartRoundAndWaitForControl();
+
+            _p2.TakeKnock(1, Vector3.forward, 0.5f);
+            yield return null;
+
+            int knocksBefore = _p2.Knocks.KnocksTaken;
+            int roundBefore = _rounds.RoundNumber;
+            Assert.That(knocksBefore, Is.GreaterThan(0), "precondition: the round is under way");
+
+            // Exactly what a late join does.
+            _match.StartMatch();
+            yield return null;
+
+            Assert.That(_rounds.RoundNumber, Is.EqualTo(roundBefore),
+                "A match already in progress must not be restarted from underneath itself.");
+            Assert.That(_p2.Knocks.KnocksTaken, Is.EqualTo(knocksBefore),
+                "Restarting would have wiped the damage already taken.");
+        }
+
+        [UnityTest]
+        public IEnumerator SuddenDeath_StopsBeingTrueOnceTheRoundIsOver()
+        {
+            // The HUD prints SUDDEN DEATH straight off this flag. A match that ended in overtime
+            // left it set, so the text sat over the end card for good.
+            yield return StartRoundAndWaitForControl();
+
+            // Overtime has no public entry - it is driven internally when the clock expires with
+            // knocks level, and waiting out a 60s round in a test is not worth it. Reflection runs
+            // the real coroutine rather than faking the flag, so this still exercises the code path.
+            var runOvertime = typeof(RoundManager).GetMethod("RunOvertime",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.That(runOvertime, Is.Not.Null, "RunOvertime should still exist");
+            _rounds.StartCoroutine((IEnumerator)runOvertime.Invoke(_rounds, null));
+
+            yield return WaitUntil(() => _rounds.IsOvertime, 10f, "overtime never started");
+
+            _p2.TakeKnock(_config.KnocksToKo, Vector3.forward, 1f);
+            yield return WaitUntil(() => !_rounds.IsRoundActive, 5f, "the round never ended");
+            yield return null;
+
+            Assert.That(_rounds.IsOvertime, Is.False,
+                "Overtime is a property of a running round, not a state the match keeps.");
+        }
+
         // ---------------------------------------------------------------- helpers
 
         IEnumerator StartRoundAndWaitForControl(bool startMatch = true)
         {
-            if (startMatch) _match.StartMatch();
+            // Rematch rather than StartMatch: adding the second fighter in SetUp already completed
+            // the roster and started a match, and StartMatch now refuses to restart a running one.
+            if (startMatch) _match.Rematch();
 
             yield return WaitUntil(() => _rounds.IsRoundActive, 10f, "the round never became active");
         }

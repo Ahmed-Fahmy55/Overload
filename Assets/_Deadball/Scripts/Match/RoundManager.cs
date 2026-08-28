@@ -208,6 +208,13 @@ namespace Deadball.Match
             // the HUD's round-win pips in particular - reads an already-updated score.
             RoundFinished?.Invoke(winnerSlot, reason);
             EventBus<RoundEnded>.Raise(new RoundEnded(winnerSlot, reason));
+
+            // Cleared after the broadcast so listeners still see how the round ended. Overtime only
+            // means anything while a round is running: a match that ended in sudden death used to
+            // leave the flag set, and the HUD went on reading "SUDDEN DEATH" over the end card
+            // forever because nothing started another round to clear it.
+            IsOvertime = false;
+            _ball.OvertimeActive = false;
         }
 
         int SlotWithFewestKnocks(out bool tied)

@@ -102,6 +102,21 @@ namespace Deadball.Match
         [Button("Start Match"), DisableInEditorMode]
         public void StartMatch()
         {
+            // Starting is not the same as restarting. Anything that fires the roster event again
+            // mid-match - a late join, a re-broadcast - must not silently wipe the score and drop
+            // both runners back into round one. A rematch is the deliberate version and goes
+            // through Begin directly.
+            if (IsMatchRunning) return;
+
+            Begin();
+        }
+
+        /// <summary>Same players, instant. One button (11.2).</summary>
+        [Button("Rematch"), DisableInEditorMode]
+        public void Rematch() => Begin();
+
+        void Begin()
+        {
             if (_roster is not { IsReady: true })
             {
                 Debug.LogWarning("[Deadball] Cannot start a match before both slots are claimed.", this);
@@ -117,10 +132,6 @@ namespace Deadball.Match
 
             BeginNextRound();
         }
-
-        /// <summary>Same players, instant. One button (11.2).</summary>
-        [Button("Rematch"), DisableInEditorMode]
-        public void Rematch() => StartMatch();
 
         void BeginNextRound()
         {
