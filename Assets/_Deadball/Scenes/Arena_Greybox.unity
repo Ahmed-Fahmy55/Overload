@@ -94,7 +94,8 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
-  m_LightingSettings: {fileID: 0}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 80a271d6b5aa3444c9b46a48e0c11b18,
+    type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -2898,6 +2899,7 @@ MonoBehaviour:
   _core: {fileID: 1851174282}
   _audio: {fileID: 284664144}
   _visuals: {fileID: 1851174285}
+  _fuse: {fileID: 1851174288}
 --- !u!114 &284664146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15987,6 +15989,7 @@ GameObject:
   - component: {fileID: 1851174282}
   - component: {fileID: 1851174286}
   - component: {fileID: 1851174285}
+  - component: {fileID: 1851174288}
   m_Layer: 25
   m_Name: Ball
   m_TagString: Untagged
@@ -16138,6 +16141,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 2
+--- !u!114 &1851174288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851174281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 032d430c079b60b4ba597fcb92fdf3f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Deadball::Deadball.Ball.CoreFuse
+  _core: {fileID: 1851174282}
+  _config: {fileID: 11400000, guid: e4c32b1b4a2b7e54387ad61747fc3595, type: 2}
 --- !u!1 &1856710352
 GameObject:
   m_ObjectHideFlags: 0

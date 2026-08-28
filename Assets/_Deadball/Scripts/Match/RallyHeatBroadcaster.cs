@@ -31,6 +31,9 @@ namespace Deadball.Match
         [Tooltip("Optional. Drives the core's colour ramp.")]
         [SerializeField] BallVisualPresenter _visuals;
 
+        [Tooltip("Burns the hold fuse faster as the core heats up.")]
+        [SerializeField] Deadball.Ball.CoreFuse _fuse;
+
         void OnEnable()
         {
             _heat.HeatChanged += OnHeatChanged;
@@ -51,6 +54,7 @@ namespace Deadball.Match
         {
             if (_audio != null) _audio.SetHeat(heat01);
             if (_visuals != null) _visuals.SetHeat(heat01);
+            if (_fuse != null) _fuse.SetHeat(heat01);
         }
 
         void OnCriticalChanged(bool critical)

@@ -101,6 +101,24 @@ namespace Deadball.Config
         [SerializeField] float _catchLockout = 0.6f;
 
         [TabGroup("Tuning", "Heat")]
+        [Title("Hold Fuse", "The core cooks whoever is carrying it")]
+        [SuffixLabel("s", true), MinValue(0.5f), LabelText("Hold Fuse")]
+        [InfoBox("How long the core can be carried before it detonates and takes the holder with "
+            + "it. Without this, a player who is ahead can simply pick the core up and run out the "
+            + "clock - nobody can take it off them and nobody can hurt them while they hold it.")]
+        [SerializeField] float _holdFuseSeconds = 5f;
+
+        [TabGroup("Tuning", "Heat")]
+        [SuffixLabel("s", true), MinValue(0.2f), LabelText("Hold Fuse At Critical")]
+        [Tooltip("An unstable core gives you far less time to find a target.")]
+        [SerializeField] float _holdFuseCriticalSeconds = 3f;
+
+        [TabGroup("Tuning", "Heat")]
+        [PropertyRange(0f, 1f), LabelText("Warn Below")]
+        [Tooltip("Fraction of the fuse left when the danger triangles start showing.")]
+        [SerializeField] float _fuseWarningFraction = 0.6f;
+
+        [TabGroup("Tuning", "Heat")]
         [Title("Rally Heat", "16 - the longer you keep the core alive, the likelier it is to kill you")]
         [MinValue(0f), LabelText("Gain Per Perfect Clamp")]
         [SerializeField] float _heatPerPerfectClamp = 22f;
@@ -215,6 +233,15 @@ namespace Deadball.Config
         public float WallBounceRetention => _wallBounceRetention;
         public int BouncesBeforeLoose => _bouncesBeforeLoose;
         public float LooseSpeedThreshold => _looseSpeedThreshold;
+        public float FuseWarningFraction => _fuseWarningFraction;
+
+        /// <summary>How long the core tolerates being carried at the given heat (16).</summary>
+        /// <remarks>
+        /// Scaled by heat rather than switched at the CRITICAL threshold, so the pressure builds
+        /// through a rally instead of arriving as a step change the player cannot anticipate.
+        /// </remarks>
+        public float HoldFuseFor(float heat01) =>
+            Mathf.Lerp(_holdFuseSeconds, _holdFuseCriticalSeconds, Mathf.Clamp01(heat01));
         public float StallFailsafe => _stallFailsafe;
         public float PickupRadius => _pickupRadius;
 

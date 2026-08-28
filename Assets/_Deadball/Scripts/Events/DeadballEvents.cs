@@ -235,6 +235,21 @@ namespace Deadball.Events
         }
     }
 
+    /// <summary>
+    /// Raised when the core detonates in a holder's hands because they carried it too long.
+    /// </summary>
+    public readonly struct CoreDetonated : IEvent
+    {
+        public readonly int Slot;
+        public readonly Vector3 Position;
+
+        public CoreDetonated(int slot, Vector3 position)
+        {
+            Slot = slot;
+            Position = position;
+        }
+    }
+
     /// <summary>Raised the instant a wind-up reaches full charge (section 22, ring snap).</summary>
     /// <remarks>
     /// The moment deserves its own event rather than a threshold test in the presenter: max charge

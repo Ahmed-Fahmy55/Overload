@@ -161,6 +161,12 @@ namespace Deadball.Tests
         {
             using var knockedOut = new Recorder<FighterKnockedOut>();
 
+            // This test is about what a critical core does on contact. The hold fuse would also be
+            // burning during the wind-up and could KO the thrower first, so it is taken out of the
+            // way - otherwise the two mechanics race and the assertion measures whichever won.
+            var fuse = Object.FindFirstObjectByType<CoreFuse>();
+            if (fuse != null) fuse.enabled = false;
+
             _heat.Add(_config.CriticalHeat + 1f);
             yield return null;
 
@@ -218,6 +224,68 @@ namespace Deadball.Tests
             input.PressCatch();
 
             // One frame for Fighter.Update to consume the press and open the window.
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator HoardingTheCore_DetonatesItOnTheHolder()
+        {
+            // The stall this closes: whoever is ahead used to be able to pick the core up and run
+            // out the round, because nobody can take it off them and nobody can hurt them while
+            // they hold it. Possession is a timer now, not a shelter.
+            var fuse = Object.FindFirstObjectByType<CoreFuse>();
+            Assert.That(fuse, Is.Not.Null, "the core should carry a fuse");
+
+            yield return GiveCoreTo(_p1);
+
+            Assert.That(fuse.IsArmed, Is.True, "picking the core up arms the fuse.");
+            Assert.That(_p1.IsInPlay, Is.True, "precondition: still standing");
+
+            // WaitUntil here counts fixed steps, so the budget is converted rather than guessed.
+            float budget = _config.HoldFuseFor(0f) + 1.5f;
+            int steps = Mathf.CeilToInt(budget / Time.fixedDeltaTime);
+            yield return WaitUntil(() => !_p1.IsInPlay, steps,
+                $"held the core for {budget:0.0}s and nothing happened");
+
+            Assert.That(_core.HolderSlot, Is.Not.EqualTo(_p1.Slot),
+                "A detonated holder must not still be carrying the core.");
+        }
+
+        [UnityTest]
+        public IEnumerator ThrowingTheCore_ResetsTheFuseForTheNextCarrier()
+        {
+            var fuse = Object.FindFirstObjectByType<CoreFuse>();
+
+            yield return GiveCoreTo(_p1);
+            yield return Seconds(_config.HoldFuseFor(0f) * 0.6f);
+
+            Assert.That(fuse.Remaining01, Is.LessThan(0.75f), "precondition: the fuse has burned down");
+
+            // Let it go, and the next carrier should start from a full fuse rather than inheriting
+            // whatever the last one left on the clock.
+            _core.Throw(Vector3.forward, 0.4f);
+            yield return null;
+
+            Assert.That(fuse.IsArmed, Is.False, "a thrown core is not burning anyone's fuse");
+
+            yield return GiveCoreTo(_p2);
+
+            Assert.That(fuse.IsArmed, Is.True);
+            Assert.That(fuse.Remaining01, Is.GreaterThan(0.9f),
+                "The new carrier gets a fresh fuse.");
+            Assert.That(_p1.IsInPlay, Is.True, "Letting go in time has to actually save you.");
+        }
+
+        [UnityTest]
+        public IEnumerator AHotCoreBurnsItsFuseFasterThanAColdOne()
+        {
+            // The fuse scales with heat rather than switching at CRITICAL, so a long rally squeezes
+            // the holder before the threshold is ever crossed.
+            float cold = _config.HoldFuseFor(0f);
+            float hot = _config.HoldFuseFor(1f);
+
+            Assert.That(hot, Is.LessThan(cold),
+                "A critical core has to give the holder less time, not the same.");
             yield return null;
         }
 
