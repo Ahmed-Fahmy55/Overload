@@ -147,8 +147,13 @@ namespace Deadball.Tests
             // that just resolved is what closed the window. The event carries the tier the clamp
             // was actually judged at, which is the thing under test.
 
-            yield return WaitUntil(() => _core.State == BallState.Loose, 90, "the core never resolved");
-
+            // Read on the frame the clamp resolved, not after a further wait. LATE drops the core
+            // loose at the clamper's feet and pickup is deliberately a footrace - "whoever reaches
+            // it first takes the tempo" - so P2, who is standing on it, is entitled to walk over it
+            // a frame later. Waiting for a state that a legal pickup then changes measured the
+            // footrace rather than the tier.
+            Assert.That(_core.State, Is.EqualTo(BallState.Loose),
+                "A late clamp drops the core loose the moment it resolves (8.2).");
             Assert.That(_core.HolderSlot, Is.EqualTo(-1), "A late clamp gives no possession (8.2).");
             Assert.That(_core.Charge01, Is.EqualTo(0f), "A late clamp keeps no charge.");
             Assert.That(_p1.Motor.IsStunned, Is.False, "A late clamp does not stun the thrower.");
@@ -213,6 +218,42 @@ namespace Deadball.Tests
 
             Assert.That(_p2.Knocks.IsOut, Is.True,
                 "At CRITICAL a single touch is a KO regardless of charge (9).");
+        }
+
+        [UnityTest]
+        public IEnumerator CriticalHeatReachesEveryCoreOnTheDeck()
+        {
+            // Heat is a property of the rally, not of one ball. The broadcaster used to push it
+            // into a single reference wired in the inspector, so once the settings allowed more
+            // than one core, only that one killed in a touch - the spares went on dealing ordinary
+            // knocks through a critical rally, and read cold while doing it.
+            BallController spare = Object.Instantiate(
+                _core.gameObject, new Vector3(0f, 0f, -8f), Quaternion.identity)
+                .GetComponent<BallController>();
+            yield return null;
+
+            Assert.That(CoreRegistry.Cores.Count, Is.EqualTo(2),
+                "precondition: two cores are registered");
+
+            _heat.Add(_config.MaxHeat);
+            yield return null;
+
+            Assert.That(_heat.IsCritical, Is.True, $"precondition: heat={_heat.Heat}");
+
+            foreach (BallController core in CoreRegistry.Cores)
+            {
+                Assert.That(core.IsCritical, Is.True,
+                    $"{core.name} is on the deck in a critical rally and must kill in one touch");
+            }
+
+            // And back down again, so the flag is not simply latched on.
+            _heat.ResetHeat();
+            yield return null;
+
+            foreach (BallController core in CoreRegistry.Cores)
+                Assert.That(core.IsCritical, Is.False, $"{core.name} stayed critical after a reset");
+
+            Object.DestroyImmediate(spare.gameObject);
         }
 
         [UnityTest]

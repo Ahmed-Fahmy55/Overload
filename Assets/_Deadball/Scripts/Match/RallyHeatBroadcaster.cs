@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Deadball.Ball;
 using Deadball.Presentation;
 using Sirenix.OdinInspector;
@@ -34,6 +35,11 @@ namespace Deadball.Match
         [Tooltip("Burns the hold fuse faster as the core heats up.")]
         [SerializeField] Deadball.Ball.CoreFuse _fuse;
 
+        // Rebuilt only when the set of cores changes - see RefreshCoreCache.
+        readonly List<BallVisualPresenter> _coreVisuals = new();
+        readonly List<CoreFuse> _coreFuses = new();
+        int _cachedCoreCount = -1;
+
         void OnEnable()
         {
             _heat.HeatChanged += OnHeatChanged;
@@ -53,8 +59,65 @@ namespace Deadball.Match
         void OnHeatChanged(float heat, float heat01)
         {
             if (_audio != null) _audio.SetHeat(heat01);
-            if (_visuals != null) _visuals.SetHeat(heat01);
-            if (_fuse != null) _fuse.SetHeat(heat01);
+
+            // Every core again, for the same reason the critical flag goes to all of them: the
+            // colour ramp and the hold fuse are per-core components that the clones already carry,
+            // and feeding only the serialized one left the spares cold-coloured and slow-fused
+            // through a rally that had heated the deck right up.
+            RefreshCoreCache();
+
+            if (_coreVisuals.Count > 0)
+            {
+                for (int i = 0; i < _coreVisuals.Count; i++) _coreVisuals[i].SetHeat(heat01);
+            }
+            else if (_visuals != null)
+            {
+                _visuals.SetHeat(heat01);
+            }
+
+            if (_coreFuses.Count > 0)
+            {
+                for (int i = 0; i < _coreFuses.Count; i++) _coreFuses[i].SetHeat(heat01);
+            }
+            else if (_fuse != null)
+            {
+                _fuse.SetHeat(heat01);
+            }
+        }
+
+        /// <summary>Rebuilds the per-core component lists when the set of cores has changed.</summary>
+        /// <remarks>
+        /// Heat changes on every frame it bleeds, so this cannot be a GetComponent sweep. Cores are
+        /// cloned once when a match loads and then live for its duration, so a rebuild is a
+        /// per-match cost. The null check covers the round that follows a core being destroyed:
+        /// the count alone would miss a swap that happened to keep it the same.
+        /// </remarks>
+        void RefreshCoreCache()
+        {
+            var cores = CoreRegistry.Cores;
+
+            bool stale = cores.Count != _cachedCoreCount;
+            for (int i = 0; !stale && i < _coreVisuals.Count; i++)
+                if (_coreVisuals[i] == null) stale = true;
+            for (int i = 0; !stale && i < _coreFuses.Count; i++)
+                if (_coreFuses[i] == null) stale = true;
+
+            if (!stale) return;
+
+            _cachedCoreCount = cores.Count;
+            _coreVisuals.Clear();
+            _coreFuses.Clear();
+
+            for (int i = 0; i < cores.Count; i++)
+            {
+                if (cores[i] == null) continue;
+
+                var visuals = cores[i].GetComponent<BallVisualPresenter>();
+                if (visuals != null) _coreVisuals.Add(visuals);
+
+                var fuse = cores[i].GetComponent<CoreFuse>();
+                if (fuse != null) _coreFuses.Add(fuse);
+            }
         }
 
         void OnCriticalChanged(bool critical)
