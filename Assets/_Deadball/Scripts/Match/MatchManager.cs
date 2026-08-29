@@ -115,8 +115,16 @@ namespace Deadball.Match
         [Button("Rematch"), DisableInEditorMode]
         public void Rematch() => Begin();
 
+        [Title("Diagnostics")]
+        [Tooltip("Logs a stack trace whenever a match starts, to catch anything restarting it "
+            + "unexpectedly. Temporary - turn off once the restart bug is pinned down.")]
+        [SerializeField] bool _logMatchStarts;
+
         void Begin()
         {
+            if (_logMatchStarts)
+                Debug.Log("[Overload] MATCH BEGIN via " + new System.Diagnostics.StackTrace(true), this);
+
             if (_roster is not { IsReady: true })
             {
                 Debug.LogWarning("[Deadball] Cannot start a match before both slots are claimed.", this);

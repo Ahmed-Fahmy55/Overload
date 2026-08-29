@@ -20,9 +20,9 @@ MonoBehaviour:
   _dodgeInvulnerability: 0.1
   _dodgeCooldown: 2
   _maxChargeTime: 1.2
-  _minThrowSpeed: 18
-  _maxThrowSpeed: 42
-  _aimSnapAngle: 10
+  _minThrowSpeed: 25
+  _maxThrowSpeed: 50
+  _aimSnapAngle: 37.5
   _ballGravity: 0.9
   _selfHitImmunity: 0.3
   _catchWindow: 0.2
@@ -30,17 +30,20 @@ MonoBehaviour:
   _perfectClampBand: 0.12
   _perfectClampStun: 1
   _catchLockout: 1
+  _holdFuseSeconds: 5
+  _holdFuseCriticalSeconds: 2
+  _fuseWarningFraction: 0.6
   _heatPerPerfectClamp: 22
   _heatDecayPerSecond: 25
   _criticalHeat: 80
   _maxHeat: 100
   _wallBounceRetention: 0.85
-  _bouncesBeforeLoose: 4
+  _bouncesBeforeLoose: 10
   _looseSpeedThreshold: 4.5
   _stallFailsafe: 5
   _pickupRadius: 0.9
   _knocksToKo: 2
-  _instantKoCharge: 0.95
+  _instantKoCharge: 0.9
   _roundDuration: 60
   _roundWinsToTakeMatch: 2
   _roundIntroDuration: 2

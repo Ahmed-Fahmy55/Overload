@@ -45,6 +45,9 @@ namespace Deadball.Match
         [ShowInInspector, ReadOnly]
         public bool IsOvertime { get; private set; }
 
+        [Tooltip("Logs a stack trace whenever a round starts. Temporary diagnostics.")]
+        [SerializeField] bool _logRoundStarts;
+
         /// <summary>Seconds left on the clock, or 0 in overtime, which has no timer.</summary>
         public float TimeRemaining => IsOvertime ? 0f : _clock.CurrentTime;
 
@@ -81,6 +84,10 @@ namespace Deadball.Match
         /// <param name="handicappedSlot">Slot that lost the previous round, or -1 for round one.</param>
         public void BeginRound(int roundNumber, IReadOnlyList<Fighter> fighters, int handicappedSlot)
         {
+            if (_logRoundStarts)
+                Debug.Log($"[Overload] ROUND BEGIN {roundNumber} with {fighters.Count} fighters via "
+                    + new System.Diagnostics.StackTrace(true), this);
+
             Abort();
 
             RoundNumber = roundNumber;
