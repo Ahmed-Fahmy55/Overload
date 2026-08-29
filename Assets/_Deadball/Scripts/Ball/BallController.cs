@@ -116,8 +116,15 @@ namespace Deadball.Ball
             _stallFailsafe.OnTimerStop += OnStallFailsafeElapsed;
         }
 
+        // Registered here rather than by whatever created it, so a core spawned at runtime and a
+        // core placed in the scene are both found the same way.
+        void OnEnable() => CoreRegistry.Register(this);
+
+        void OnDisable() => CoreRegistry.Deregister(this);
+
         void OnDestroy()
         {
+            CoreRegistry.Deregister(this);
             _stallFailsafe.OnTimerStop -= OnStallFailsafeElapsed;
             _stallFailsafe.Dispose();
         }

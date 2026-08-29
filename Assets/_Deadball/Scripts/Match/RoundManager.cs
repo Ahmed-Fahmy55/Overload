@@ -35,6 +35,10 @@ namespace Deadball.Match
         [Required, SerializeField] ArenaReferences _arena;
         [Required, SerializeField] BallController _ball;
 
+        [Tooltip("Optional. Present when the deck can hold more than one core; without it only "
+            + "the scene's own core is placed.")]
+        [SerializeField] Deadball.Ball.CoreSpawner _cores;
+
         [Title("Runtime")]
         [ShowInInspector, ReadOnly]
         public int RoundNumber { get; private set; }
@@ -167,8 +171,17 @@ namespace Deadball.Match
             // core up the instant it respawns - from across the deck.
             Physics.SyncTransforms();
 
-            _ball.ArenaSize = _arena.Size;
-            _ball.ResetForRound(_arena.Centre);
+            // The spawner owns every core once there is more than one; falling back keeps a scene
+            // without one working exactly as it did.
+            if (_cores != null)
+            {
+                _cores.ResetForRound(_arena.Centre, _arena.Size);
+            }
+            else
+            {
+                _ball.ArenaSize = _arena.Size;
+                _ball.ResetForRound(_arena.Centre);
+            }
         }
 
         void HandControlToPlayers()

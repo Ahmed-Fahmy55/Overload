@@ -124,6 +124,10 @@ namespace Deadball.AI
             if (Time.time >= _nextThink)
             {
                 _nextThink = Time.time + _profile.NextReactionDelay();
+
+                // Which core matters is itself a decision, and it is re-made on the same beat as
+                // the state so the runner cannot switch targets faster than it can think.
+                SelectCore();
                 State = ChooseState();
             }
 
@@ -147,6 +151,42 @@ namespace Deadball.AI
             _clampQueued = false;
             _decidedForThrowId = -1;
             _aimingSince = -1f;
+        }
+
+        /// <summary>
+        /// Picks the core this runner should be paying attention to.
+        /// </summary>
+        /// <remarks>
+        /// With one core on the deck this always picks that core and nothing changes. With several,
+        /// the order is the order of danger: something already flying at you outranks the one in
+        /// your hands, which outranks whichever loose core is nearest.
+        /// </remarks>
+        void SelectCore()
+        {
+            var cores = CoreRegistry.Cores;
+            if (cores.Count <= 1) return;
+
+            // Incoming first - it is the only thing that can hurt you.
+            for (int i = 0; i < cores.Count; i++)
+            {
+                BallController core = cores[i];
+                if (core == null || core.State != BallState.Flying) continue;
+
+                BallController previous = _core;
+                _core = core;
+                if (IsIncoming()) return;
+                _core = previous;
+            }
+
+            BallController mine = CoreRegistry.HeldBy(_self.Slot);
+            if (mine != null) { _core = mine; return; }
+
+            BallController loose = CoreRegistry.Nearest(transform.position,
+                c => c.State == BallState.Loose);
+            if (loose != null) { _core = loose; return; }
+
+            BallController any = CoreRegistry.Nearest(transform.position);
+            if (any != null) _core = any;
         }
 
         AiState ChooseState()

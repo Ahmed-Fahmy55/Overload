@@ -70,8 +70,18 @@ namespace Deadball.Presentation
                     _group.AddMember(fighter.transform, _runnerWeight, _runnerRadius);
             }
 
-            if (_core != null)
+            // Every core is framed, not just the scene's original, or the camera would happily
+            // leave three of them off screen.
+            var cores = Deadball.Ball.CoreRegistry.Cores;
+            if (cores.Count > 0)
+            {
+                for (int i = 0; i < cores.Count; i++)
+                    if (cores[i] != null) _group.AddMember(cores[i].transform, _coreWeight, _coreRadius);
+            }
+            else if (_core != null)
+            {
                 _group.AddMember(_core.transform, _coreWeight, _coreRadius);
+            }
         }
     }
 }

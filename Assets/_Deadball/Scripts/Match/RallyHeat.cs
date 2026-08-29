@@ -68,9 +68,25 @@ namespace Deadball.Match
             EventBus<RoundStarting>.Deregister(_roundStarting);
         }
 
+        /// <summary>True when every core on the deck is lying loose.</summary>
+        bool AllCoresLoose()
+        {
+            var cores = Deadball.Ball.CoreRegistry.Cores;
+            if (cores.Count == 0) return _core != null && _core.State == BallState.Loose;
+
+            for (int i = 0; i < cores.Count; i++)
+                if (cores[i] != null && cores[i].State != BallState.Loose) return false;
+
+            return true;
+        }
+
         void Update()
         {
-            if (_core == null || _core.State != BallState.Loose || Heat <= 0f) return;
+            // Heat is a property of the rally, not of one ball, so with several cores in play it
+            // bleeds only while none of them is being carried - otherwise a player could park one
+            // core in hand and cool the deck off with the others (16).
+            if (Heat <= 0f) return;
+            if (!AllCoresLoose()) return;
 
             SetHeat(Heat - _config.HeatDecayPerSecond * Time.deltaTime);
         }
