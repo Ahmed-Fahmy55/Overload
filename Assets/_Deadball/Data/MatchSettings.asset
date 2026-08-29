@@ -19,4 +19,5 @@ MonoBehaviour:
   _masterVolume: 1
   _musicVolume: 1
   _sfxVolume: 0.9
+  _qualityTier: 2
   _aiProfile: {fileID: 11400000, guid: 7c025245cad7a184baaa3b302a7f3716, type: 2}
