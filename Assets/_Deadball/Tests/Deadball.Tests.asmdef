@@ -6,6 +6,7 @@
         "Core.EventBus",
         "Zone8.ImprovedTimers",
         "Unity.InputSystem",
+        "Unity.Cinemachine",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

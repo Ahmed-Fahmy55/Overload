@@ -155,6 +155,103 @@ namespace Deadball.Tests
             return asset;
         }
 
+        [UnityTest]
+        public IEnumerator EveryArenaCameraSitsCloseEnoughToItsOwnDeck()
+        {
+            // The Spine's rig had been scaled off the longest axis, so a 40x20 deck read as 33%
+            // bigger than a 30x30 one and the camera sat 44m out. On a 16:9 screen the long axis is
+            // the cheap one - what binds a pitched camera is the depth, and The Spine's is 20m
+            // against Greybox's 30m. It was 31% further out than it needed to see the whole deck,
+            // which is what "too far from the arena" looks like.
+            foreach (string scenePath in new[]
+            {
+                "Assets/_Deadball/Scenes/Arena_Greybox.unity",
+                "Assets/_Deadball/Scenes/Arena_TheSpine.unity",
+            })
+            {
+#if UNITY_EDITOR
+                yield return UnityEditor.SceneManagement.EditorSceneManager.LoadSceneAsyncInPlayMode(
+                    scenePath, new LoadSceneParameters(LoadSceneMode.Single));
+#else
+                yield break;
+#endif
+                yield return null;
+
+                var arena = Object.FindFirstObjectByType<ArenaReferences>();
+                var cam = Object.FindFirstObjectByType<Unity.Cinemachine.CinemachineCamera>();
+                var framing = cam.GetComponent<Unity.Cinemachine.CinemachineGroupFraming>();
+
+                string name = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+                float rest = cam.transform.position.magnitude;
+                float fullDeck = DistanceThatHoldsTheDeck(
+                    arena.Size, cam.Lens.FieldOfView, cam.transform.eulerAngles.x);
+
+                Assert.That(rest, Is.LessThanOrEqualTo(fullDeck),
+                    $"{name}: the camera rests at {rest:0.0}m but only needs {fullDeck:0.0}m to hold "
+                    + $"the whole {arena.Size.x}x{arena.Size.y} deck - any further out is empty space.");
+
+                Assert.That(rest + framing.DollyRange.y, Is.GreaterThanOrEqualTo(fullDeck - 0.1f),
+                    $"{name}: at full zoom-out it reaches {rest + framing.DollyRange.y:0.0}m, short of "
+                    + $"the {fullDeck:0.0}m needed to show the deck's borders.");
+            }
+        }
+
+        /// <summary>Smallest distance along the rig's pitch that still holds all four deck corners.</summary>
+        /// <remarks>
+        /// Bisected against a real <see cref="Camera"/> rather than a closed form: the pitch turns
+        /// the ground plane into a trapezium, and hand-built matrices get Unity's flipped view Z
+        /// wrong in a way that silently reports that no distance ever fits.
+        /// </remarks>
+        static float DistanceThatHoldsTheDeck(Vector2 size, float fov, float pitch)
+        {
+            var probeGo = new GameObject("~camfit") { hideFlags = HideFlags.HideAndDontSave };
+
+            try
+            {
+                var probe = probeGo.AddComponent<Camera>();
+                probe.enabled = false;
+                probe.fieldOfView = fov;
+                probe.aspect = 16f / 9f;
+                probe.transform.rotation = Quaternion.Euler(pitch, 0f, 0f);
+
+                float hx = size.x * 0.5f;
+                float hz = size.y * 0.5f;
+                var corners = new[]
+                {
+                    new Vector3(-hx, 0f, -hz), new Vector3(hx, 0f, -hz),
+                    new Vector3(-hx, 0f, hz), new Vector3(hx, 0f, hz),
+                };
+
+                bool Fits(float d)
+                {
+                    float rad = pitch * Mathf.Deg2Rad;
+                    probe.transform.position =
+                        new Vector3(0f, d * Mathf.Sin(rad), -d * Mathf.Cos(rad));
+
+                    foreach (Vector3 corner in corners)
+                    {
+                        Vector3 v = probe.WorldToViewportPoint(corner);
+                        if (v.z <= 0.01f || v.x < 0f || v.x > 1f || v.y < 0f || v.y > 1f) return false;
+                    }
+
+                    return true;
+                }
+
+                float lo = 1f, hi = 200f;
+                for (int i = 0; i < 50; i++)
+                {
+                    float mid = (lo + hi) * 0.5f;
+                    if (Fits(mid)) hi = mid; else lo = mid;
+                }
+
+                return hi;
+            }
+            finally
+            {
+                Object.DestroyImmediate(probeGo);
+            }
+        }
+
         static IEnumerator LoadArena()
         {
 #if UNITY_EDITOR

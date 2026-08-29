@@ -2797,6 +2797,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Deadball::Deadball.HUD.GameplaySettingsApplier
   _settings: {fileID: 11400000, guid: 9268c36f464c321459f3e3ccb8ba91cd, type: 2}
+  _rows: []
 --- !u!4 &262826026
 Transform:
   m_ObjectHideFlags: 0
@@ -4079,7 +4080,7 @@ MonoBehaviour:
   SizeAdjustment: 1
   LateralAdjustment: 0
   FovRange: {x: 1, y: 100}
-  DollyRange: {x: -6.16, y: 2}
+  DollyRange: {x: -4.152396, y: 3.930029}
   OrthoSizeRange: {x: 1, y: 1000}
 --- !u!114 &364703284
 MonoBehaviour:
@@ -4099,7 +4100,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 33.705956, z: -28.282656}
+  FollowOffset: {x: 0, y: 22.720856, z: -19.065063}
 --- !u!114 &364703285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4152,7 +4153,7 @@ Transform:
   m_GameObject: {fileID: 364703282}
   serializedVersion: 2
   m_LocalRotation: {x: 0.4226183, y: 0, z: 0, w: 0.9063078}
-  m_LocalPosition: {x: 0, y: 33.705956, z: -28.282656}
+  m_LocalPosition: {x: 0, y: 22.720856, z: -19.065063}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5279,7 +5280,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294108891
   m_fontColor: {r: 0.86, g: 0.9, b: 0.95, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -5292,7 +5293,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -9697,7 +9698,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294108891
   m_fontColor: {r: 0.86, g: 0.9, b: 0.95, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -9710,7 +9711,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -16544,7 +16545,7 @@ Transform:
   m_GameObject: {fileID: 1707466006}
   serializedVersion: 2
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063078}
-  m_LocalPosition: {x: 0, y: 29.492712, z: -24.747322}
+  m_LocalPosition: {x: 0, y: 28.343645, z: -23.78314}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17403,7 +17404,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294108891
   m_fontColor: {r: 0.86, g: 0.9, b: 0.95, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
