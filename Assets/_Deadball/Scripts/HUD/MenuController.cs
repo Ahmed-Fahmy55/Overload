@@ -1,3 +1,5 @@
+using Core.Events;
+using Deadball.Events;
 using Deadball.AI;
 using Deadball.Match;
 using Sirenix.OdinInspector;
@@ -161,7 +163,7 @@ namespace Deadball.HUD
             if (_settings.Mode == MatchMode.LocalVersus && _versusJoin != null && !_versusJoin.IsReady)
                 return;
 
-            SceneManager.LoadScene(_settings.ArenaScene);
+            EventBus<SceneLoadRequested>.Raise(new SceneLoadRequested(_settings.ArenaScene));
         }
 
         public void Quit()

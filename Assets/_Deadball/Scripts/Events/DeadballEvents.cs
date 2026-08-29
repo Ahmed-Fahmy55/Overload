@@ -236,6 +236,21 @@ namespace Deadball.Events
     }
 
     /// <summary>
+    /// Asks for a scene change, without saying how it should look.
+    /// </summary>
+    /// <remarks>
+    /// TransitionsPlus ships no assembly definition, so its types live in Assembly-CSharp where this
+    /// assembly cannot reach them - the same wall Heat and Feel sit behind. Gameplay states the
+    /// intent and a bridge outside the assembly owns the wipe and the async load.
+    /// </remarks>
+    public readonly struct SceneLoadRequested : IEvent
+    {
+        public readonly string SceneName;
+
+        public SceneLoadRequested(string sceneName) => SceneName = sceneName;
+    }
+
+    /// <summary>
     /// Raised when the core detonates in a holder's hands because they carried it too long.
     /// </summary>
     public readonly struct CoreDetonated : IEvent

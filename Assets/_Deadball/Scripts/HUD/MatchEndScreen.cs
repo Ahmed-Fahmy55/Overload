@@ -86,7 +86,7 @@ namespace Deadball.HUD
         public void BackToMenu()
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene(_menuScene);
+            EventBus<SceneLoadRequested>.Raise(new SceneLoadRequested(_menuScene));
         }
 
         void Hide()
