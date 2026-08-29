@@ -26,12 +26,24 @@ namespace Deadball.HUD
         [Tooltip("Quality rows to keep in step with the saved value.")]
         [SerializeField] MenuSelectorRow[] _rows;
 
-        /// <summary>Which of Unity's six levels each tier maps to.</summary>
+        /// <summary>Which of Unity's quality levels a tier maps to.</summary>
         /// <remarks>
-        /// Fast / Good / Fantastic. Fastest is skipped deliberately: it drops shadows entirely, and
-        /// the runners' shadows are the only thing anchoring them to the deck.
+        /// Spread across whatever levels the project actually has rather than hardcoded. This
+        /// started as {1, 3, 5} against Unity's six stock levels, and broke the moment the unused
+        /// ones were deleted - the project now carries exactly three, so tier 2 was asking for
+        /// level 5 and getting clamped down to the lowest-quality end.
         /// </remarks>
-        static readonly int[] UnityLevels = { 1, 3, 5 };
+        static int UnityLevelFor(int tier)
+        {
+            int count = QualitySettings.names.Length;
+            if (count <= 1) return 0;
+
+            float t = MatchSettings.QualityTierCount > 1
+                ? tier / (float)(MatchSettings.QualityTierCount - 1)
+                : 0f;
+
+            return Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(0f, count - 1, t)), 0, count - 1);
+        }
 
         [Title("Runtime"), ShowInInspector, ReadOnly]
         public int Tier => _settings != null ? _settings.QualityTier : 2;
@@ -65,7 +77,7 @@ namespace Deadball.HUD
         {
             if (_settings == null) return;
 
-            int level = UnityLevels[Mathf.Clamp(_settings.QualityTier, 0, UnityLevels.Length - 1)];
+            int level = UnityLevelFor(_settings.QualityTier);
 
             // Without the expensive changes the switch skips reapplying render pipeline assets,
             // which is exactly the part that has to change for the tier to mean anything.
