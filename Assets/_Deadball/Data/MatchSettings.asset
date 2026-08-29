@@ -15,8 +15,8 @@ MonoBehaviour:
   _mode: 0
   _arenaScene: Arena_Greybox
   _arenaDisplayName: SECTOR 9
-  _ballCount: 2
+  _ballCount: 1
   _masterVolume: 1
-  _musicVolume: 0.7
-  _sfxVolume: 1
+  _musicVolume: 1
+  _sfxVolume: 0.9
   _aiProfile: {fileID: 11400000, guid: 7c025245cad7a184baaa3b302a7f3716, type: 2}

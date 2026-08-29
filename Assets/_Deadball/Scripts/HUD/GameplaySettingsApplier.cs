@@ -16,8 +16,27 @@ namespace Deadball.HUD
     {
         [Required, SerializeField] MatchSettings _settings;
 
+        [Tooltip("Core-count rows to keep in step with the saved value.")]
+        [SerializeField] MenuSelectorRow[] _rows;
+
         [Title("Runtime"), ShowInInspector, ReadOnly]
         public int BallCount => _settings != null ? _settings.BallCount : 1;
+
+        /// <summary>
+        /// Shows the saved core count on every row that offers it.
+        /// </summary>
+        /// <remarks>
+        /// The rows were built with whatever the value happened to be at author time, so without
+        /// this a screen could open reading "1" while the asset held 4 - and the first nudge of the
+        /// row would then jump from a number nobody chose.
+        /// </remarks>
+        void OnEnable()
+        {
+            if (_settings == null || _rows == null) return;
+
+            foreach (MenuSelectorRow row in _rows)
+                if (row != null) row.SetIndexSilently(_settings.BallCount - 1);
+        }
 
         /// <summary>Takes a zero-based row index, since that is what an option row reports.</summary>
         public void SetBallCountIndex(int index)
