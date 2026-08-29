@@ -143,6 +143,11 @@ namespace Deadball.Match
 
             HandControlToPlayers();
             IsRoundActive = true;
+
+            // Overtime is a round starting, and everything that reacts to play resuming hangs off
+            // this: the HUD only ever hides its card on RoundStarted, so without it the OVERTIME
+            // card stayed on screen for the whole of sudden death. The audio beds restart here too.
+            EventBus<RoundStarted>.Raise(new RoundStarted(RoundNumber));
         }
 
         void PlaceForRound(int knocksAllowed)

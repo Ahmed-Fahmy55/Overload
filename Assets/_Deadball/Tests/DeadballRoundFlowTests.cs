@@ -222,6 +222,31 @@ namespace Deadball.Tests
                 "Overtime is a property of a running round, not a state the match keeps.");
         }
 
+        [UnityTest]
+        public IEnumerator SuddenDeath_AnnouncesPlayResuming()
+        {
+            // The HUD takes its card down on RoundStarted and nothing else. Overtime used to reach
+            // IsRoundActive without ever raising it, so the OVERTIME card sat over sudden death
+            // until the match ended.
+            using var started = new Recorder<RoundStarted>();
+
+            yield return StartRoundAndWaitForControl();
+            int before = started.Count;
+
+            var runOvertime = typeof(RoundManager).GetMethod("RunOvertime",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            _rounds.StartCoroutine((IEnumerator)runOvertime.Invoke(_rounds, null));
+
+            // IsOvertime flips on the first line of the coroutine, so waiting on it would assert
+            // before the intro card has even finished. The announcement itself is the signal.
+            yield return WaitUntil(() => started.Count > before,
+                _config.RoundIntroDuration + 3f,
+                "sudden death never announced that play resumed - the card stays up");
+
+            Assert.That(_rounds.IsOvertime, Is.True, "precondition: this was the overtime round");
+            Assert.That(_rounds.IsRoundActive, Is.True, "play should be under way");
+        }
+
         // ---------------------------------------------------------------- helpers
 
         IEnumerator StartRoundAndWaitForControl(bool startMatch = true)
