@@ -6071,7 +6071,7 @@ MonoBehaviour:
   _winnerLabel: {fileID: 1644367623}
   _palette: {fileID: 11400000, guid: d01a6b6bd54cd484fbf9ba7a172da11b, type: 2}
   _match: {fileID: 284664137}
-  _delay: 1.4
+  _delay: 2
   _menuScene: Menu
 --- !u!225 &860327687
 CanvasGroup:
@@ -8440,7 +8440,7 @@ MonoBehaviour:
         DebugActive: 0
         Mode: 0
         TimeScale: 0.35
-        TimeScaleDuration: 0.3
+        TimeScaleDuration: 0.5
         ResetTimescaleOnStop: 0
         UnfreezeTimescaleOnStop: 0
         TimeScaleLerp: 0

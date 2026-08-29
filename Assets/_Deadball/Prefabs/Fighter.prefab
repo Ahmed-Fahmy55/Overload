@@ -1141,8 +1141,8 @@ MonoBehaviour:
   _fighter: {fileID: 1698452338706598393}
   _derezShader: {fileID: 4800000, guid: 1140e3a6365e4734e9ba49b825d1e64f, type: 3}
   _noise: {fileID: 2800000, guid: 3f1d4fadb37c37e4488860109d7dce4b, type: 3}
-  _duration: 0.75
-  _delay: 0.12
+  _duration: 0.9
+  _delay: 0.5
   _edgeColour: {r: 0.6, g: 3, b: 5, a: 1}
   _edgeWidth: 0.1
   _noiseScale: 5
