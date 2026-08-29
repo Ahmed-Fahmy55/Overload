@@ -20,9 +20,9 @@ RenderSettings:
   m_FogDensity: 0.012
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.13, g: 0.16, b: 0.22, a: 1}
-  m_AmbientEquatorColor: {r: 0.09, g: 0.11, b: 0.15, a: 1}
-  m_AmbientGroundColor: {r: 0.04, g: 0.05, b: 0.07, a: 1}
+  m_AmbientSkyColor: {r: 0.195, g: 0.24, b: 0.32999998, a: 1}
+  m_AmbientEquatorColor: {r: 0.135, g: 0.16499999, b: 0.22500001, a: 1}
+  m_AmbientGroundColor: {r: 0.06, g: 0.075, b: 0.105000004, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
@@ -1081,7 +1081,7 @@ Light:
   serializedVersion: 12
   m_Type: 1
   m_Color: {r: 0.55, g: 0.68, b: 1, a: 1}
-  m_Intensity: 0.55
+  m_Intensity: 1.05
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -8330,6 +8330,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4703305769891498, guid: 273d4a9a8934ffe4592c065048a4bf16, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 108814213932526114, guid: 273d4a9a8934ffe4592c065048a4bf16,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 108814213932526114, guid: 273d4a9a8934ffe4592c065048a4bf16,
+        type: 3}
+      propertyPath: m_Intensity
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198254548964640828, guid: 273d4a9a8934ffe4592c065048a4bf16,
