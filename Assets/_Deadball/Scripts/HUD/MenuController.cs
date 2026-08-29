@@ -4,6 +4,7 @@ using Deadball.AI;
 using Deadball.Match;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -78,6 +79,60 @@ namespace Deadball.HUD
             for (int i = 0; i < _panels.Length; i++)
             {
                 if (_panels[i] != null) _panels[i].SetActive(i == index);
+            }
+
+            FocusFirstControl(index);
+        }
+
+        /// <summary>
+        /// Hands the new screen's first control to the event system.
+        /// </summary>
+        /// <remarks>
+        /// Without this nothing is ever selected, so a pad or the arrow keys do nothing at all until
+        /// a mouse happens to hover something - and the mouse is locked away (12). Every screen change
+        /// has to re-seat the selection or the player is stranded on a screen they cannot drive.
+        /// </remarks>
+        void FocusFirstControl(int index)
+        {
+            if (EventSystem.current == null) return;
+            if (_panels == null || index < 0 || index >= _panels.Length) return;
+
+            GameObject panel = _panels[index];
+            if (panel == null) return;
+
+            Selectable first = null;
+            foreach (Selectable candidate in panel.GetComponentsInChildren<Selectable>(false))
+            {
+                if (!candidate.IsInteractable()) continue;
+
+                // Topmost wins, so the order matches how the screen reads rather than hierarchy order.
+                if (first == null || candidate.transform.position.y > first.transform.position.y)
+                    first = candidate;
+            }
+
+            EventSystem.current.SetSelectedGameObject(first != null ? first.gameObject : null);
+        }
+
+        /// <summary>
+        /// Puts the selection back whenever it is lost.
+        /// </summary>
+        /// <remarks>
+        /// A selection can be cleared by things outside this screen's control - a click on empty
+        /// space, a device change, a panel that switched under it. With the cursor locked away (12)
+        /// there is no pointer to recover with, so an empty selection means a player holding a pad
+        /// is stranded on a screen that ignores them. Re-seating it costs one null check a frame.
+        /// </remarks>
+        void Update()
+        {
+            if (EventSystem.current == null) return;
+            if (EventSystem.current.currentSelectedGameObject != null) return;
+
+            for (int i = 0; i < _panels.Length; i++)
+            {
+                if (_panels[i] == null || !_panels[i].activeInHierarchy) continue;
+
+                FocusFirstControl(i);
+                return;
             }
         }
 

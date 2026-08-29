@@ -5,6 +5,8 @@ using Deadball.Match;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 namespace Deadball.HUD
@@ -49,6 +51,15 @@ namespace Deadball.HUD
 
         void Update()
         {
+            // Same guarantee the menu makes: while this card owns the screen, something on it stays
+            // selected, or a pad has nothing to press.
+            if (IsShowing && EventSystem.current != null
+                && EventSystem.current.currentSelectedGameObject == null)
+            {
+                Selectable restore = GetComponentInChildren<Selectable>();
+                if (restore != null) EventSystem.current.SetSelectedGameObject(restore.gameObject);
+            }
+
             if (IsShowing || _showAt < 0f || Time.unscaledTime < _showAt) return;
 
             _showAt = -1f;
@@ -59,6 +70,14 @@ namespace Deadball.HUD
                 _group.alpha = 1f;
                 _group.interactable = true;
                 _group.blocksRaycasts = true;
+            }
+
+            // The card is the only thing on screen now, so it takes the selection - otherwise a pad
+            // has nothing to act on and REMATCH is unreachable without a mouse.
+            if (EventSystem.current != null)
+            {
+                Selectable first = GetComponentInChildren<Selectable>();
+                if (first != null) EventSystem.current.SetSelectedGameObject(first.gameObject);
             }
         }
 
