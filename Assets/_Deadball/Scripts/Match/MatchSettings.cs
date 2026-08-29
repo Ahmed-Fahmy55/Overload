@@ -47,12 +47,26 @@ namespace Deadball.Match
         [PropertyRange(0f, 1f), SerializeField] float _musicVolume = 0.8f;
         [PropertyRange(0f, 1f), SerializeField] float _sfxVolume = 1f;
 
+        [Title("Quality")]
+        [Tooltip("Three tiers rather than Unity's six. The six built-in names mean nothing to a "
+            + "player, and the middle four are barely distinguishable on a deck this simple.")]
+        [PropertyRange(0, QualityTierCount - 1), SerializeField] int _qualityTier = 2;
+
         [Title("Solo Difficulty", "13.3")]
         [Tooltip("Only used in Solo. One float, three tiers.")]
         [SerializeField] AiProfile _aiProfile;
 
         /// <summary>The most cores the deck will ever hold.</summary>
         public const int MaxBallCount = 4;
+
+        /// <summary>LOW, MEDIUM, HIGH.</summary>
+        public const int QualityTierCount = 3;
+
+        public int QualityTier
+        {
+            get => Mathf.Clamp(_qualityTier, 0, QualityTierCount - 1);
+            set => _qualityTier = Mathf.Clamp(value, 0, QualityTierCount - 1);
+        }
 
         public MatchMode Mode { get => _mode; set => _mode = value; }
 
