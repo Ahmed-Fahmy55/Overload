@@ -137,3 +137,7 @@ InitTestScene*.unity*
 # Music tracks: audio source material, not code (see the asset-pack rule above).
 /Assets/_Deadball/Audio/*.mp3
 /Assets/_Deadball/Audio/*.mp3.meta
+
+# CLI eval scripts and their reports. Scratch for driving the editor in batch mode -
+# kept out of Temp/ because Unity clears that on launch.
+/Tools/
