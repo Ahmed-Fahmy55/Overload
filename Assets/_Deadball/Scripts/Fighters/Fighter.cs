@@ -84,7 +84,11 @@ namespace Deadball.Fighters
             if (_input.DodgePressed && _motor.TryDodge())
                 EventBus<FighterDodged>.Raise(new FighterDodged(Slot, transform.position));
 
-            if (_input.CatchPressed)
+            // A runner carrying a core cannot clamp. It could never take a second one anyway
+            // (CanTakeBall is false while holding), so opening a window here only burned the miss
+            // lockout on a press that could not succeed. Refusing it outright leaves a carrier two
+            // honest answers to an incoming core: dodge, or throw the one they have at it.
+            if (_input.CatchPressed && !_thrower.HasBall)
                 _catcher.TryOpenWindow();
         }
 

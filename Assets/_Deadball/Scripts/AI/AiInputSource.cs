@@ -374,10 +374,16 @@ namespace Deadball.AI
             }
 
             Move = Flatten(ApplyAimError(toOpponent));
-            ThrowHeld = true;
 
-            if (_self.Thrower.Charge01 >= _chargeTarget)
+            // Released only once the thrower is genuinely charging. This used to set the input true
+            // and then false within the same frame whenever the core was already past the target -
+            // which is exactly what a PERFECT clamp hands over, a core at full charge. The thrower
+            // only ever observed "false", so it never started charging and therefore never
+            // released, and the runner carried that core for the rest of the round.
+            if (_self.Thrower.IsCharging && _self.Thrower.Charge01 >= _chargeTarget)
                 ThrowHeld = false;
+            else
+                ThrowHeld = true;
         }
 
         void Evade()

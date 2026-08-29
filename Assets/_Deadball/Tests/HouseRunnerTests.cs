@@ -62,6 +62,7 @@ namespace Deadball.Tests
             Strip<HitstopService>();
             StripFeedbacks();
             ClearFighters();
+            KeepOneCore();
 
             Time.timeScale = 1f;
 
@@ -316,6 +317,48 @@ namespace Deadball.Tests
             return null;
         }
 
+        [UnityTest]
+        public IEnumerator ThrowsACoreThatArrivedAlreadyCharged()
+        {
+            // What a PERFECT clamp hands over: possession at full charge. The runner's charge is
+            // already past its target on the first frame of AIM, and it used to set the throw input
+            // true and false within that same frame - so the thrower never observed a press, never
+            // started charging, and never released. The core was carried for the rest of the round.
+            bool thrown = false;
+            var binding = new EventBinding<BallThrown>(() => thrown = true);
+            EventBus<BallThrown>.Register(binding);
+
+            try
+            {
+                _house.PrepareForRound(new Vector3(-6f, 0f, 0f), Quaternion.LookRotation(Vector3.right));
+                _human.PrepareForRound(new Vector3(6f, 0f, 0f), Quaternion.LookRotation(Vector3.left));
+                _house.SetControlEnabled(true);
+                _human.SetControlEnabled(true);
+                yield return null;
+
+                _core.ResetForRound(_house.transform.position + Vector3.right * 1.2f);
+                _core.TryGrab(_house);
+                yield return null;
+
+                Assert.That(_house.Thrower.HasBall, Is.True, "precondition: the runner is carrying it");
+
+                // Hand it the charge a clamp would have preserved.
+                _house.ReceiveBall(_core, 1f, wasCaught: true);
+                yield return null;
+
+                Assert.That(_house.Thrower.Charge01, Is.EqualTo(1f).Within(0.01f),
+                    "precondition: it arrived at full charge");
+
+                float budget = _config.MaxChargeTime + 2f;
+                yield return WaitUntil(() => thrown, budget,
+                    $"held a fully charged core for {budget:0.0}s without throwing it");
+            }
+            finally
+            {
+                EventBus<BallThrown>.Deregister(binding);
+            }
+        }
+
         // ---------------------------------------------------------------- helpers
 
         static AiProfile Load(string path)
@@ -415,6 +458,22 @@ namespace Deadball.Tests
             }
 
             Time.timeScale = 1f;
+        }
+
+        // Every test here measures the runner against one named core. The arena now spawns as many
+        // as the shared settings asset asks for, and the extras are indistinguishable to the AI -
+        // it would happily hunt the one the test is not moving.
+        static void KeepOneCore()
+        {
+            Strip<Deadball.Ball.CoreSpawner>();
+
+            bool kept = false;
+            foreach (BallController core in Object.FindObjectsByType<BallController>(
+                FindObjectsSortMode.None))
+            {
+                if (!kept) { kept = true; continue; }
+                Object.DestroyImmediate(core.gameObject);
+            }
         }
 
         static void Strip<T>() where T : Component

@@ -40,7 +40,7 @@ namespace Deadball.Match
         [Tooltip("How many cores are in play. One is the tuned game: section 6.1 calls a single "
             + "core a hard rule, because every read the player learns is built on there being "
             + "exactly one thing to watch. More is a party mode, not a balance change.")]
-        [PropertyRange(1, MaxBallCount), SerializeField] int _ballCount = 1;
+        [PropertyRange(1, MaxBallCount), SerializeField] int _ballCount = 2;
 
         [Title("Audio")]
         [PropertyRange(0f, 1f), SerializeField] float _masterVolume = 1f;
