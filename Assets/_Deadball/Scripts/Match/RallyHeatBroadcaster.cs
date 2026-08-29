@@ -60,7 +60,22 @@ namespace Deadball.Match
         void OnCriticalChanged(bool critical)
         {
             // The core carries the flag itself so a hit can be resolved without a lookup (9).
-            if (_core != null) _core.IsCritical = critical;
+            //
+            // Every core on the deck, not just the one wired in the inspector. Heat is a property
+            // of the rally rather than of one ball, so with several in play the serialized
+            // reference would have been the only one that killed in a touch and the rest would
+            // have gone on dealing ordinary knocks through a critical rally.
+            var cores = CoreRegistry.Cores;
+            if (cores.Count > 0)
+            {
+                for (int i = 0; i < cores.Count; i++)
+                    if (cores[i] != null) cores[i].IsCritical = critical;
+            }
+            else if (_core != null)
+            {
+                _core.IsCritical = critical;
+            }
+
             if (_audio != null) _audio.SetCritical(critical);
             if (_visuals != null) _visuals.SetCritical(critical);
         }

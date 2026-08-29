@@ -59,6 +59,7 @@ namespace Deadball.Tests
             StripSceneDriver<HitstopService>();
             StripFeedbacks();
             ClearSpawnedFighters();
+            KeepOneCore();
 
             Time.timeScale = 1f;
 
@@ -122,24 +123,29 @@ namespace Deadball.Tests
 
             // Pressing earlier opens the window sooner, so the core arrives in the LATE remainder -
             // the panic press is the mercy tier.
-            // Aimed a whole window ahead so that by the time the core lands, most of the window has
-            // burned and the clamp resolves in the LATE band. Half a window put the arrival inside
-            // the PERFECT band instead - prediction plus the frame it takes to consume the press
-            // always eats some of the lead.
-            yield return PressClampAtArrivalIn(_input2, _p2, _config.CatchWindow);
+            //
+            // Aimed at the middle of the LATE band rather than at a fixed lead. A whole window
+            // ahead lands on the closing edge, and the frame it takes to consume the press pushes
+            // it past: the window has already shut, the tier reads None, and the failure looks
+            // like a clamp bug rather than a stopwatch that overshot. Half a window lands inside
+            // PERFECT instead. The midpoint is the only lead that stays in LATE however the window
+            // and the perfect band are tuned - at 0.20s/0.12s it leaves 0.04s of slack either way.
+            float lateMidpoint = _config.PerfectClampBand
+                + (_config.CatchWindow - _config.PerfectClampBand) * 0.5f;
+            yield return PressClampAtArrivalIn(_input2, _p2, lateMidpoint);
 
-            // Waiting for the band rather than sleeping towards it. A fixed sleep raced the 0.30s
-            // window: one hitched frame and the window had already closed, so the tier read None
-            // and the failure looked like a clamp bug rather than a stopwatch that overshot.
-            // The clamp's own resolution reports its tier, so there is no window to sample and no
-            // race to lose. Polling ClampTier meant catching an 0.08s slice between fixed steps.
+            // Waiting for the band rather than sleeping towards it. The clamp's own resolution
+            // reports its tier, so there is no window to sample and no race to lose. Polling
+            // ClampTier meant catching an 0.08s slice between fixed steps.
             yield return WaitUntil(() => clamps.Count > 0, 90, "the clamp never resolved");
 
             Assert.That(clamps.LastTier, Is.EqualTo(ClampTier.Late),
                 $"Past the perfect band it is LATE (window={_config.CatchWindow}s, "
                 + $"band={_config.PerfectClampBand}s).");
 
-            Assert.That(_p2.ClampTier, Is.EqualTo(ClampTier.Late), "Past the perfect band it is LATE.");
+            // No second assert on _p2.ClampTier: that property is live window state, and the clamp
+            // that just resolved is what closed the window. The event carries the tier the clamp
+            // was actually judged at, which is the thing under test.
 
             yield return WaitUntil(() => _core.State == BallState.Loose, 90, "the core never resolved");
 
@@ -182,10 +188,16 @@ namespace Deadball.Tests
             var fuse = Object.FindFirstObjectByType<CoreFuse>();
             if (fuse != null) fuse.enabled = false;
 
-            _heat.Add(_config.CriticalHeat + 1f);
+            // Topped right up rather than nudged one point over the line. The core is loose here,
+            // so heat is bleeding at 25/s and a single frame costs more than a point - a margin
+            // that thin dropped back under the threshold before the next line could read it.
+            _heat.Add(_config.MaxHeat);
             yield return null;
 
-            Assert.That(_heat.IsCritical, Is.True);
+            Assert.That(_heat.IsCritical, Is.True,
+                $"heat={_heat.Heat} critical at {_config.CriticalHeat} max={_config.MaxHeat} "
+                + $"decay={_config.HeatDecayPerSecond}/s cores={Deadball.Ball.CoreRegistry.Cores.Count} "
+                + $"coreState={_core.State}");
             Assert.That(_core.IsCritical, Is.True, "The core carries the critical flag itself (9).");
 
             // A soft throw that would normally cost one of two knocks.
@@ -407,6 +419,23 @@ namespace Deadball.Tests
         class FlashRecorder : Recorder<BallFlashCue> { }
 
         /// <summary>Keeps the tier the game resolved, so a test never has to guess it.</summary>
+        // Each test here follows one named core from the throw to the clamp. The arena spawns as
+        // many as the shared settings asset asks for, and a spare sitting on the deck is a second
+        // thing that can reach a fighter - it lands its own contact and the fixture reads the
+        // wrong one.
+        static void KeepOneCore()
+        {
+            StripSceneDriver<Deadball.Ball.CoreSpawner>();
+
+            bool kept = false;
+            foreach (BallController core in Object.FindObjectsByType<BallController>(
+                FindObjectsSortMode.None))
+            {
+                if (!kept) { kept = true; continue; }
+                Object.DestroyImmediate(core.gameObject);
+            }
+        }
+
         class ClampRecorder : System.IDisposable
         {
             readonly EventBinding<BallCaught> _binding;
