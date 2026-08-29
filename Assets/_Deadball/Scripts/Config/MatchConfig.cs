@@ -195,7 +195,11 @@ namespace Deadball.Config
 
         [TabGroup("Tuning", "Arena")]
         [Title("Arena", "15 - one flat lot, walls on all sides")]
-        [SuffixLabel("m", true), MinValue(5f)]
+        [SuffixLabel("m", true), MinValue(5f), LabelText("Fallback Arena Size")]
+        [InfoBox("Only a fallback. Each deck states its own size on its ArenaReferences - Sector 9 "
+            + "is 30x30 and The Spine is 40x20 - and RoundManager pushes that to the core every "
+            + "round. This value is used solely when nothing has supplied a real one, so changing "
+            + "it does not resize either arena.", InfoMessageType.Info)]
         [SerializeField] float _arenaSize = 20f;
 
         [TabGroup("Tuning", "Arena")]

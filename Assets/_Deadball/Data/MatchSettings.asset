@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6b0c52e43c94304280d6a660c88f1c0, type: 3}
   m_Name: MatchSettings
   m_EditorClassIdentifier: Deadball::Deadball.Match.MatchSettings
-  _mode: 1
+  _mode: 0
   _arenaScene: Arena_Greybox
   _arenaDisplayName: SECTOR 9
-  _ballCount: 1
+  _ballCount: 2
   _masterVolume: 1
-  _musicVolume: 0.8
+  _musicVolume: 0.7
   _sfxVolume: 1
   _aiProfile: {fileID: 11400000, guid: 7c025245cad7a184baaa3b302a7f3716, type: 2}

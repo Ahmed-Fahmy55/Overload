@@ -14150,7 +14150,7 @@ MonoBehaviour:
   SizeAdjustment: 1
   LateralAdjustment: 0
   FovRange: {x: 1, y: 100}
-  DollyRange: {x: -4.62, y: 5.5}
+  DollyRange: {x: -4.62, y: 2}
   OrthoSizeRange: {x: 1, y: 1000}
 --- !u!114 &1555620178
 MonoBehaviour:
@@ -17245,6 +17245,8 @@ MonoBehaviour:
   _coreWeight: 0.35
   _coreRadius: 1.5
   _core: {fileID: 1851174282}
+  _arena: {fileID: 1124517022}
+  _boundsMargin: 1.5
 --- !u!114 &1819548615
 MonoBehaviour:
   m_ObjectHideFlags: 0

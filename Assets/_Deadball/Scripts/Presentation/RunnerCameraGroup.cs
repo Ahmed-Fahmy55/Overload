@@ -40,6 +40,14 @@ namespace Deadball.Presentation
         [Tooltip("Optional. Included in the framing at a reduced weight.")]
         [SerializeField] BallController _core;
 
+        [Tooltip("Supplies the deck bounds. Without it every core is framed wherever it ends up.")]
+        [SerializeField] Deadball.Match.ArenaReferences _arena;
+
+        [Title("Bounds")]
+        [Tooltip("How far past the containment field a core may drift and still be framed. Small, "
+            + "so a core resting against the wall does not flicker in and out of the group.")]
+        [SuffixLabel("m", true), MinValue(0f), SerializeField] float _boundsMargin = 1.5f;
+
         CinemachineTargetGroup _group;
         EventBinding<FighterRegistered> _registered;
 
@@ -70,18 +78,61 @@ namespace Deadball.Presentation
                     _group.AddMember(fighter.transform, _runnerWeight, _runnerRadius);
             }
 
-            // Every core is framed, not just the scene's original, or the camera would happily
-            // leave three of them off screen.
+            // Cores are added and dropped continuously by TrackCores, not fixed here: one that has
+            // left the deck must stop dragging the frame with it.
+            TrackCores();
+        }
+
+        void LateUpdate() => TrackCores();
+
+        /// <summary>
+        /// Keeps the group holding exactly the cores that are still on the deck.
+        /// </summary>
+        /// <remarks>
+        /// A core that clears the containment field - through a gap, or off the edge - would
+        /// otherwise pull the framing out toward it forever, shrinking the runners to specks over
+        /// an empty deck. It is dropped while it is away and picked back up if it returns, so a
+        /// core that bounces back into play is framed again without anything having to notice.
+        /// </remarks>
+        void TrackCores()
+        {
+            if (_group == null) return;
+
             var cores = Deadball.Ball.CoreRegistry.Cores;
-            if (cores.Count > 0)
+            if (cores.Count == 0)
             {
-                for (int i = 0; i < cores.Count; i++)
-                    if (cores[i] != null) _group.AddMember(cores[i].transform, _coreWeight, _coreRadius);
+                if (_core != null) Track(_core.transform, IsOnDeck(_core.transform.position));
+                return;
             }
-            else if (_core != null)
+
+            for (int i = 0; i < cores.Count; i++)
             {
-                _group.AddMember(_core.transform, _coreWeight, _coreRadius);
+                var core = cores[i];
+                if (core == null) continue;
+
+                Track(core.transform, IsOnDeck(core.transform.position));
             }
+        }
+
+        void Track(Transform target, bool shouldBeFramed)
+        {
+            int index = _group.FindMember(target);
+
+            if (shouldBeFramed && index < 0) _group.AddMember(target, _coreWeight, _coreRadius);
+            else if (!shouldBeFramed && index >= 0) _group.RemoveMember(target);
+        }
+
+        bool IsOnDeck(Vector3 position)
+        {
+            // No arena reference means no way to judge, so everything counts as on the deck rather
+            // than the camera silently dropping every core.
+            if (_arena == null) return true;
+
+            Vector3 centre = _arena.Centre;
+            Vector2 half = _arena.Size * 0.5f;
+
+            return Mathf.Abs(position.x - centre.x) <= half.x + _boundsMargin
+                && Mathf.Abs(position.z - centre.z) <= half.y + _boundsMargin;
         }
     }
 }
