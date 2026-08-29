@@ -66,6 +66,8 @@ namespace Deadball.HUD
 
         void Update()
         {
+            if (_matchOver) return;
+
             if (_rounds.IsOvertime)
             {
                 _timerLabel.text = "SUDDEN DEATH";
@@ -86,10 +88,21 @@ namespace Deadball.HUD
             ShowCard(text, evt.WinnerSlot >= 0 ? _palette.BodyColour(evt.WinnerSlot) : Color.white);
         }
 
+        /// <summary>
+        /// Clears the HUD for the match-end screen.
+        /// </summary>
+        /// <remarks>
+        /// The winner is announced by <see cref="MatchEndScreen"/>, which is the screen section 21
+        /// specifies. This used to print the same line onto its own card as well, so the name was
+        /// drawn twice, offset, one string over the other. The round clock is stopped too - a timer
+        /// still counting down under a finished match reads as a bug.
+        /// </remarks>
         void OnMatchEnded(MatchEnded evt)
         {
             _matchOver = true;
-            ShowCard($"{_palette.DisplayName(evt.WinnerSlot)} WINS", _palette.BodyColour(evt.WinnerSlot));
+            HideCard();
+
+            if (_timerLabel != null) _timerLabel.text = string.Empty;
         }
 
         void ShowCard(string text, Color colour)

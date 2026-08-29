@@ -109,6 +109,7 @@ namespace Deadball.Tests
         public IEnumerator LateClamp_StopsTheCoreButDropsItLooseAndAddsNoHeat()
         {
             using var flashes = new FlashRecorder();
+            using var clamps = new ClampRecorder();
 
             _heat.Add(40f);
             float before = _heat.Heat;
@@ -121,8 +122,22 @@ namespace Deadball.Tests
 
             // Pressing earlier opens the window sooner, so the core arrives in the LATE remainder -
             // the panic press is the mercy tier.
-            yield return PressClampAtArrivalIn(_input2, _p2, 0.24f);
-            yield return Seconds(_config.PerfectClampBand + 0.02f);
+            // Aimed a whole window ahead so that by the time the core lands, most of the window has
+            // burned and the clamp resolves in the LATE band. Half a window put the arrival inside
+            // the PERFECT band instead - prediction plus the frame it takes to consume the press
+            // always eats some of the lead.
+            yield return PressClampAtArrivalIn(_input2, _p2, _config.CatchWindow);
+
+            // Waiting for the band rather than sleeping towards it. A fixed sleep raced the 0.30s
+            // window: one hitched frame and the window had already closed, so the tier read None
+            // and the failure looked like a clamp bug rather than a stopwatch that overshot.
+            // The clamp's own resolution reports its tier, so there is no window to sample and no
+            // race to lose. Polling ClampTier meant catching an 0.08s slice between fixed steps.
+            yield return WaitUntil(() => clamps.Count > 0, 90, "the clamp never resolved");
+
+            Assert.That(clamps.LastTier, Is.EqualTo(ClampTier.Late),
+                $"Past the perfect band it is LATE (window={_config.CatchWindow}s, "
+                + $"band={_config.PerfectClampBand}s).");
 
             Assert.That(_p2.ClampTier, Is.EqualTo(ClampTier.Late), "Past the perfect band it is LATE.");
 
@@ -178,7 +193,11 @@ namespace Deadball.Tests
             yield return ChargeFor(_input1, _config.MaxChargeTime * 0.25f);
             _input1.ThrowHeld = false;
 
-            yield return WaitUntil(() => knockedOut.Count > 0, 150, "the core never landed");
+            // Specifically the target. Waiting for "someone was knocked out" also passes when the
+            // thrower eats their own ricochet, and then the real assert fails for a reason the
+            // message does not explain.
+            yield return WaitUntil(() => _p2.Knocks.IsOut, 200,
+                "the critical core never took P2 out");
 
             Assert.That(_p2.Knocks.IsOut, Is.True,
                 "At CRITICAL a single touch is a KO regardless of charge (9).");
@@ -386,6 +405,27 @@ namespace Deadball.Tests
         }
 
         class FlashRecorder : Recorder<BallFlashCue> { }
+
+        /// <summary>Keeps the tier the game resolved, so a test never has to guess it.</summary>
+        class ClampRecorder : System.IDisposable
+        {
+            readonly EventBinding<BallCaught> _binding;
+
+            public int Count { get; private set; }
+            public ClampTier LastTier { get; private set; } = ClampTier.None;
+
+            public ClampRecorder()
+            {
+                _binding = new EventBinding<BallCaught>(evt =>
+                {
+                    Count++;
+                    LastTier = evt.Tier;
+                });
+                EventBus<BallCaught>.Register(_binding);
+            }
+
+            public void Dispose() => EventBus<BallCaught>.Deregister(_binding);
+        }
 
         class Recorder<T> : System.IDisposable where T : IEvent
         {
