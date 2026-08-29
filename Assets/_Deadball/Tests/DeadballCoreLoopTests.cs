@@ -67,6 +67,7 @@ namespace Deadball.Tests
             StripSceneDriver<HitstopService>();
             StripFeedbacks();
             ClearSpawnedFighters();
+            KeepOneCore();
 
             Time.timeScale = 1f;
 
@@ -432,7 +433,10 @@ namespace Deadball.Tests
             _ball.ResetForRound(fighter.transform.position);
 
             yield return WaitUntil(() => _ball.HolderSlot == fighter.Slot, 20,
-                "the fighter standing on the ball never picked it up");
+                $"the fighter standing on the ball never picked it up "
+                + $"(canTake={fighter.CanTakeBall} inPlay={fighter.IsInPlay} "
+                + $"hasBall={fighter.Thrower.HasBall} fumbling={fighter.Catcher.IsFumbling} "
+                + $"ballState={_ball.State} holder={_ball.HolderSlot})");
         }
 
         IEnumerator ChargeFor(ScriptedInput input, float seconds)
@@ -487,6 +491,22 @@ namespace Deadball.Tests
         /// claims both slots at scene load. The test needs the arena empty before it installs its
         /// own scripted fighters, or two fighters end up sharing each slot.
         /// </remarks>
+        // This fixture follows one ball from throw to rest. The arena spawns as many cores as the
+        // shared settings asset asks for, and a spare on the deck is a second thing a fighter can
+        // walk into - the pickup the test is waiting for lands on the wrong core.
+        static void KeepOneCore()
+        {
+            StripSceneDriver<Deadball.Ball.CoreSpawner>();
+
+            bool kept = false;
+            foreach (BallController core in Object.FindObjectsByType<BallController>(
+                FindObjectsSortMode.None))
+            {
+                if (!kept) { kept = true; continue; }
+                Object.DestroyImmediate(core.gameObject);
+            }
+        }
+
         static void ClearSpawnedFighters()
         {
             foreach (Fighter fighter in Object.FindObjectsByType<Fighter>(FindObjectsSortMode.None))

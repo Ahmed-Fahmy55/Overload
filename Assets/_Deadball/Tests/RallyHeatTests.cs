@@ -158,6 +158,23 @@ namespace Deadball.Tests
             Assert.That(_core.Charge01, Is.EqualTo(0f), "A late clamp keeps no charge.");
             Assert.That(_p1.Motor.IsStunned, Is.False, "A late clamp does not stun the thrower.");
             Assert.That(_heat.Heat, Is.LessThanOrEqualTo(before), "A late clamp must never add heat.");
+
+            // And the drop has to be contestable. The core lands at the clamper's feet, so without
+            // a fumble beat they walk straight back over it and LATE is just a PERFECT that cost
+            // them the charge. The mercy tier has to actually put the core up for grabs.
+            Assert.That(_p2.CanTakeBall, Is.False,
+                "the late clamper must not be able to retake the core they just dropped (8.2)");
+            Assert.That(_p1.CanTakeBall, Is.True,
+                "the thrower is free to race them for it");
+
+            yield return Seconds(_config.LateClampFumble + 0.1f);
+
+            // Either reading proves the beat expired: they can take it again, or they already have.
+            // A bare CanTakeBall check fails on success here - the core is lying at their feet, so
+            // the moment the fumble lifts they walk over it and CanTakeBall goes false again
+            // because they are now carrying it.
+            Assert.That(_p2.CanTakeBall || _core.HolderSlot == _p2.Slot, Is.True,
+                "the fumble is a beat, not a lockout - it has to expire");
         }
 
         [UnityTest]

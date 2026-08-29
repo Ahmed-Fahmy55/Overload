@@ -29,6 +29,7 @@ MonoBehaviour:
   _catchFlashLead: 0.3
   _perfectClampBand: 0.12
   _perfectClampStun: 1
+  _lateClampFumble: 0.5
   _catchLockout: 1
   _holdFuseSeconds: 5
   _holdFuseCriticalSeconds: 2

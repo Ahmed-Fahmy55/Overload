@@ -50,7 +50,7 @@ namespace Deadball.Fighters
         public float CatchRadius => _catchRadius;
         public bool IsInPlay => _registered && !_knocks.IsOut;
         public Transform HandAnchor => _thrower.HandAnchor;
-        public bool CanTakeBall => IsInPlay && !_thrower.HasBall;
+        public bool CanTakeBall => IsInPlay && !_thrower.HasBall && !_catcher.IsFumbling;
         public bool IsCatchWindowActive => _catcher.IsWindowActive;
         public ClampTier ClampTier => _catcher.CurrentTier;
         public bool IsImmune => _knocks.IsImmune;
@@ -149,7 +149,7 @@ namespace Deadball.Fighters
         }
 
         /// <summary>A late clamp still resolved the window, so it must not cost a lockout (8.2).</summary>
-        public void NotifyClampResolved() => _catcher.NotifyCaught();
+        public void NotifyLateClamp() => _catcher.NotifyLateClamp();
 
         public void TakeKnock(int knocks, Vector3 direction, float charge01) =>
             _knocks.TakeKnock(knocks, direction, charge01);

@@ -29,6 +29,7 @@ namespace Deadball.Ball
         void ApplyStun(float seconds);
 
         /// <summary>Closes the clamp window without a lockout, even when nothing was gained.</summary>
-        void NotifyClampResolved();
+        /// <summary>Called when a clamp resolved as LATE: the core drops loose and cannot be retaken yet.</summary>
+        void NotifyLateClamp();
     }
 }

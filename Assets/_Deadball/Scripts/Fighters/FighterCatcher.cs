@@ -32,6 +32,17 @@ namespace Deadball.Fighters
         [ShowInInspector, ReadOnly]
         public bool IsLockedOut => Lockout is { IsRunning: true, IsFinished: false };
 
+        /// <summary>
+        /// True while a LATE clamp bars this fighter from retaking the core (8.2).
+        /// </summary>
+        /// <remarks>
+        /// LATE stops the core dead and drops it loose at the clamper's feet. Without a beat where
+        /// they cannot take it, they just walk over it on the next frame and the mercy tier becomes
+        /// a slightly worse PERFECT. This is what makes the drop a footrace anyone can win.
+        /// </remarks>
+        [ShowInInspector, ReadOnly]
+        public bool IsFumbling => Fumble is { IsRunning: true, IsFinished: false };
+
         /// <summary>0..1 fill of the lockout, for a HUD or shader tell.</summary>
         public float LockoutProgress => IsLockedOut ? 1f - Lockout.Progress : 0f;
 
@@ -62,6 +73,7 @@ namespace Deadball.Fighters
         bool _resolved;
         CountdownTimer _window;
         CountdownTimer _lockout;
+        CountdownTimer _fumble;
 
         // Lazily built for the same reason as the motor's timers: the join callback can reach this
         // component before its Awake has run.
@@ -79,10 +91,14 @@ namespace Deadball.Fighters
 
         CountdownTimer Lockout => _lockout ??= new CountdownTimer(_config.CatchLockout);
 
+        CountdownTimer Fumble => _fumble ??= new CountdownTimer(
+            Mathf.Max(0.01f, _config.LateClampFumble));
+
         void Awake()
         {
             _ = Window;
             _ = Lockout;
+            _ = Fumble;
         }
 
         void OnDestroy()
@@ -90,6 +106,7 @@ namespace Deadball.Fighters
             if (_window != null) _window.OnTimerStop -= OnWindowClosed;
             _window?.Dispose();
             _lockout?.Dispose();
+            _fumble?.Dispose();
         }
 
         public void Initialise(int slot) => _slot = slot;
@@ -120,6 +137,19 @@ namespace Deadball.Fighters
             Lockout.Stop();
         }
 
+        /// <summary>
+        /// Called when the clamp resolved as LATE: no penalty for the press, but no free pickup.
+        /// </summary>
+        public void NotifyLateClamp()
+        {
+            NotifyCaught();
+
+            if (_config.LateClampFumble <= 0f) return;
+
+            Fumble.Reset(_config.LateClampFumble);
+            Fumble.Start();
+        }
+
         public void SetEnabled(bool enabled)
         {
             _enabled = enabled;
@@ -131,6 +161,7 @@ namespace Deadball.Fighters
             _resolved = true;
             Window.Stop();
             Lockout.Stop();
+            Fumble.Stop();
         }
 
         void OnWindowClosed()

@@ -252,7 +252,7 @@ namespace Deadball.Ball
             if (tier == Fighters.ClampTier.Late)
             {
                 // Stopped, but not yours. Whoever reaches it first takes the tempo.
-                target.NotifyClampResolved();
+                target.NotifyLateClamp();
                 GoLoose(target.CenterPosition);
                 return;
             }

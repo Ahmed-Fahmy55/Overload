@@ -96,6 +96,13 @@ namespace Deadball.Config
         [SerializeField] float _perfectClampStun = 0.35f;
 
         [TabGroup("Tuning", "Catch")]
+        [SuffixLabel("s", true), MinValue(0f), LabelText("Late Clamp Fumble")]
+        [InfoBox("How long a LATE clamper cannot pick the core back up. The core drops at their "
+            + "feet, so without this they simply walk over it and LATE costs them nothing but the "
+            + "charge - the mercy tier has to leave the core genuinely up for grabs (8.2).")]
+        [SerializeField] float _lateClampFumble = 0.5f;
+
+        [TabGroup("Tuning", "Catch")]
         [SuffixLabel("s", true), MinValue(0f), LabelText("Lockout On Miss")]
         [InfoBox("$LockoutAdvice", InfoMessageType.Warning)]
         [SerializeField] float _catchLockout = 0.6f;
@@ -233,6 +240,9 @@ namespace Deadball.Config
         public float MaxHeat => _maxHeat;
         public float CatchFlashLead => _catchFlashLead;
         public float CatchLockout => _catchLockout;
+
+        /// <summary>How long a LATE clamper is barred from retaking the core they just dropped.</summary>
+        public float LateClampFumble => _lateClampFumble;
 
         public float WallBounceRetention => _wallBounceRetention;
         public int BouncesBeforeLoose => _bouncesBeforeLoose;
