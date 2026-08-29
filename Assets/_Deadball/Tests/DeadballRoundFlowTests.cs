@@ -160,15 +160,30 @@ namespace Deadball.Tests
         [UnityTest]
         public IEnumerator BallReturnsToTheCentre_AtTheStartOfEveryRound()
         {
-            var ball = Object.FindFirstObjectByType<BallController>();
-
             yield return StartRoundAndWaitForControl();
 
-            Assert.That(ball.State, Is.EqualTo(BallState.Loose));
+            var cores = Deadball.Ball.CoreRegistry.Cores;
+            Assert.That(cores.Count, Is.GreaterThan(0), "the deck has to start with a core on it");
 
-            Vector3 flat = ball.transform.position - _arena.Centre;
+            // A single core spawns dead centre; several spawn evenly around a ring about it, so the
+            // rule that holds either way is that they are placed symmetrically on the centre mark.
+            // Asserting one core's own position stopped being the rule the moment the settings
+            // allowed more than one.
+            Vector3 centroid = Vector3.zero;
+
+            foreach (BallController core in cores)
+            {
+                Assert.That(core.State, Is.EqualTo(BallState.Loose),
+                    $"{core.name} has to start the round loose");
+                centroid += core.transform.position;
+            }
+
+            centroid /= cores.Count;
+
+            Vector3 flat = centroid - _arena.Centre;
             flat.y = 0f;
-            Assert.That(flat.magnitude, Is.LessThan(0.5f), "The ball spawns dead centre (10).");
+            Assert.That(flat.magnitude, Is.LessThan(0.5f),
+                $"The {cores.Count} core(s) spawn on the centre mark (10).");
         }
 
         [UnityTest]
@@ -195,6 +210,33 @@ namespace Deadball.Tests
                 "A match already in progress must not be restarted from underneath itself.");
             Assert.That(_p2.Knocks.KnocksTaken, Is.EqualTo(knocksBefore),
                 "Restarting would have wiped the damage already taken.");
+        }
+
+        [UnityTest]
+        public IEnumerator SuddenDeath_SpeedsUpEveryCoreNotJustTheWiredOne()
+        {
+            // Overtime raises throw speed, and the flag used to be set on the single core wired in
+            // the inspector. With several on the deck that left one of them quietly faster than the
+            // rest for the whole of sudden death, depending on which one the scene referenced.
+            yield return StartRoundAndWaitForControl();
+
+            var cores = Deadball.Ball.CoreRegistry.Cores;
+            Assert.That(cores.Count, Is.GreaterThan(0), "the deck has to start with a core on it");
+
+            foreach (BallController core in cores)
+                Assert.That(core.OvertimeActive, Is.False, $"precondition: {core.name} starts normal");
+
+            var runOvertime = typeof(RoundManager).GetMethod("RunOvertime",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            _rounds.StartCoroutine((IEnumerator)runOvertime.Invoke(_rounds, null));
+
+            yield return WaitUntil(() => _rounds.IsOvertime, 10f, "overtime never started");
+
+            foreach (BallController core in Deadball.Ball.CoreRegistry.Cores)
+            {
+                Assert.That(core.OvertimeActive, Is.True,
+                    $"{core.name} is on the deck in sudden death and has to throw at overtime speed");
+            }
         }
 
         [UnityTest]

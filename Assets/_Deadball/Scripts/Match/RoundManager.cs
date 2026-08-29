@@ -118,7 +118,7 @@ namespace Deadball.Match
         IEnumerator RunRound()
         {
             IsOvertime = false;
-            _ball.OvertimeActive = false;
+            SetOvertimeOnEveryCore(false);
 
             PlaceForRound(_config.KnocksToKo);
 
@@ -138,7 +138,7 @@ namespace Deadball.Match
         IEnumerator RunOvertime()
         {
             IsOvertime = true;
-            _ball.OvertimeActive = true;
+            SetOvertimeOnEveryCore(true);
 
             PlaceForRound(_config.OvertimeKnocksRemaining);
             EventBus<OvertimeStarted>.Raise(new OvertimeStarted());
@@ -182,6 +182,29 @@ namespace Deadball.Match
                 _ball.ArenaSize = _arena.Size;
                 _ball.ResetForRound(_arena.Centre);
             }
+        }
+
+        /// <summary>
+        /// Flags sudden death on every core on the deck.
+        /// </summary>
+        /// <remarks>
+        /// Overtime raises throw speed, and it was only ever set on the core wired in the
+        /// inspector. With several in play that made one of them quietly faster than the rest for
+        /// the whole of sudden death - the tell that overtime has started would have applied to
+        /// whichever core the scene happened to reference.
+        /// </remarks>
+        void SetOvertimeOnEveryCore(bool active)
+        {
+            var cores = Deadball.Ball.CoreRegistry.Cores;
+            if (cores.Count > 0)
+            {
+                for (int i = 0; i < cores.Count; i++)
+                    if (cores[i] != null) cores[i].OvertimeActive = active;
+
+                return;
+            }
+
+            if (_ball != null) _ball.OvertimeActive = active;
         }
 
         void HandControlToPlayers()
@@ -239,7 +262,7 @@ namespace Deadball.Match
             // leave the flag set, and the HUD went on reading "SUDDEN DEATH" over the end card
             // forever because nothing started another round to clear it.
             IsOvertime = false;
-            _ball.OvertimeActive = false;
+            SetOvertimeOnEveryCore(false);
         }
 
         int SlotWithFewestKnocks(out bool tied)
