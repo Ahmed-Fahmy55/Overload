@@ -18,6 +18,6 @@ MonoBehaviour:
   _ballCount: 2
   _masterVolume: 1
   _musicVolume: 1
-  _sfxVolume: 0.9
+  _sfxVolume: 1
   _qualityTier: 2
-  _aiProfile: {fileID: 11400000, guid: 7c025245cad7a184baaa3b302a7f3716, type: 2}
+  _aiProfile: {fileID: 11400000, guid: c3f699a54868b174f90bcae4b2f787fb, type: 2}
