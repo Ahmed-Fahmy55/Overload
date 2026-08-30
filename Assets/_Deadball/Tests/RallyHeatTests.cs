@@ -370,6 +370,33 @@ namespace Deadball.Tests
         }
 
         [UnityTest]
+        public IEnumerator ThrowingTheCore_TakesTheDangerTrianglesWithIt()
+        {
+            // Reported from play: the triangles sometimes stayed lit after a throw. The indicator
+            // had two ways to decide there was nothing to warn about - no core held, and a fuse
+            // that is not warning - and only the second one switched the label off. A throw takes
+            // the core away, so it hit the silent path and the warning was left burning over a
+            // runner holding nothing.
+            var indicator = _p1.GetComponentInChildren<Deadball.HUD.FuseWarningIndicator>(true);
+            Assert.That(indicator, Is.Not.Null, "the runner should carry a fuse indicator");
+
+            yield return GiveCoreTo(_p1);
+
+            float warnStarts = _config.HoldFuseFor(0f) * (1f - _config.FuseWarningFraction);
+            int steps = Mathf.CeilToInt((warnStarts + 0.5f) / Time.fixedDeltaTime);
+
+            yield return WaitUntil(() => indicator.IsShowing, steps,
+                $"no danger triangles after {warnStarts:0.0}s of holding");
+
+            _core.Throw(Vector3.forward, 0.5f);
+            yield return null;
+
+            Assert.That(_core.HolderSlot, Is.EqualTo(-1), "precondition: the core has left");
+            Assert.That(indicator.IsShowing, Is.False,
+                "the warning has to go out with the core it was warning about");
+        }
+
+        [UnityTest]
         public IEnumerator ThrowingTheCore_ResetsTheFuseForTheNextCarrier()
         {
             var fuse = Object.FindFirstObjectByType<CoreFuse>();

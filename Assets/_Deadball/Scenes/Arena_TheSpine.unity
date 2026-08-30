@@ -3259,6 +3259,7 @@ GameObject:
   - component: {fileID: 262826024}
   - component: {fileID: 262826025}
   - component: {fileID: 262826027}
+  - component: {fileID: 262826028}
   m_Layer: 0
   m_Name: SettingsAppliers
   m_TagString: Untagged
@@ -3323,6 +3324,26 @@ MonoBehaviour:
   _settings: {fileID: 11400000, guid: 9268c36f464c321459f3e3ccb8ba91cd, type: 2}
   _rows:
   - {fileID: 18592598}
+--- !u!114 &262826028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 262826023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3171f764ea87a546b33f31148fd473c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Deadball::Deadball.HUD.UiSoundDirector
+  _hover:
+    _entity: {fileID: 11400000, guid: 2514219ac8a6b0441b7f14ff8c313ef4, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 0}
+  _click:
+    _entity: {fileID: 11400000, guid: c30c25460b512d2419b5b71160ef02c6, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 0}
 --- !u!1001 &270563444
 PrefabInstance:
   m_ObjectHideFlags: 0

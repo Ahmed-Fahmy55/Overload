@@ -69,14 +69,16 @@ namespace Deadball.HUD
             // against the first core's fuse - which is armed to nobody - and the triangles never
             // appeared for them.
             ResolveFuse();
-            if (_fuse == null) return;
 
-            IsShowing = _fuse.IsWarning && _fighter.IsInPlay;
+            // One exit for "nothing to warn about". There used to be two - an early return when
+            // the runner held no core at all, and this one - and only this one turned the label
+            // off. Throwing the core takes the fuse away, so the throw hit the silent path and the
+            // triangles stayed lit over a runner who was no longer carrying anything.
+            IsShowing = _fuse != null && _fuse.IsWarning && _fighter.IsInPlay;
 
             if (!IsShowing)
             {
-                _phase = 0f;
-                _label.enabled = false;
+                Hide();
                 return;
             }
 
@@ -92,6 +94,12 @@ namespace Deadball.HUD
             // Face the camera: the runners rotate freely and the triangles must stay readable.
             if (Camera.main != null)
                 _label.transform.rotation = Camera.main.transform.rotation;
+        }
+
+        void Hide()
+        {
+            _phase = 0f;
+            _label.enabled = false;
         }
 
         /// <summary>Finds the fuse of the core this runner is carrying, if any.</summary>
