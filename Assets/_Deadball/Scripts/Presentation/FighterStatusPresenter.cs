@@ -16,15 +16,16 @@ namespace Deadball.Presentation
     /// this is the one you can read from across the deck.
     /// </para>
     /// <para>
-    /// The three states are mutually exclusive and ordered by urgency, exactly as the ring orders
-    /// them: a lockout is the most important thing to know, then an open catch window, then charge.
+    /// Charge only. The bar used to multiplex three states - lockout, open catch window, charge -
+    /// so the thing above a runner changed meaning depending on what they had just done, and you
+    /// had to read the colour to know which. The two cooldowns are their own icons at the bottom of
+    /// the HUD now, and this is left saying exactly one thing: how hard the throw will be.
     /// </para>
     /// </remarks>
     public class FighterStatusPresenter : MonoBehaviour
     {
         [Title("References")]
         [Required, SerializeField] FighterThrower _thrower;
-        [Required, SerializeField] FighterCatcher _catcher;
         [Required, SerializeField] RectTransform _root;
         [Required, SerializeField] Image _fill;
         [SerializeField] Image _background;
@@ -32,8 +33,6 @@ namespace Deadball.Presentation
         [Title("Colours")]
         [SerializeField] Color _chargeLow = new(1f, 0.95f, 0.8f);
         [SerializeField] Color _chargeHigh = new(1f, 0.45f, 0.1f);
-        [SerializeField] Color _catchActive = Color.white;
-        [SerializeField] Color _lockedOut = new(0.4f, 0.42f, 0.5f);
 
         [Title("Placement")]
         [Tooltip("Height above the runner's feet.")]
@@ -47,14 +46,11 @@ namespace Deadball.Presentation
             if (_root == null) return;
             if (_canvas == null) _canvas = _root.GetComponent<Canvas>();
 
-            bool locked = _catcher != null && _catcher.IsLockedOut;
-            bool catching = _catcher != null && _catcher.IsWindowActive;
             float charge = _thrower != null ? _thrower.Charge01 : 0f;
 
-            if (locked) Show(_catcher.LockoutProgress, _lockedOut);
-            else if (catching) Show(1f, _catchActive);
-            else if (charge > 0.001f) Show(charge, Color.Lerp(_chargeLow, _chargeHigh, charge));
-            else { SetVisible(false); return; }
+            if (charge <= 0.001f) { SetVisible(false); return; }
+
+            Show(charge, Color.Lerp(_chargeLow, _chargeHigh, charge));
 
             SetVisible(true);
             Face();

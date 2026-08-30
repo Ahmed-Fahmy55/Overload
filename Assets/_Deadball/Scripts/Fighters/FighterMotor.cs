@@ -29,6 +29,18 @@ namespace Deadball.Fighters
         [ShowInInspector, ReadOnly]
         public bool CanDodge => !IsDodging && _acceptsInput && !IsStunned && !Cooldown.IsRunning;
 
+        /// <summary>True while the dodge is still recovering.</summary>
+        public bool IsDodgeCoolingDown => Cooldown is { IsRunning: true, IsFinished: false };
+
+        /// <summary>
+        /// How far the dodge has recovered, 0 just after a dodge to 1 when it is available again.
+        /// </summary>
+        /// <remarks>
+        /// Expressed as readiness rather than as time remaining so the HUD can fill both ability
+        /// icons from the same number - the catcher reports its lockout the same way.
+        /// </remarks>
+        public float DodgeReady01 => IsDodgeCoolingDown ? 1f - Cooldown.Progress : 1f;
+
         /// <summary>
         /// True while staggered by a perfect clamp (8.2). No movement, no dodge, no throw.
         /// </summary>

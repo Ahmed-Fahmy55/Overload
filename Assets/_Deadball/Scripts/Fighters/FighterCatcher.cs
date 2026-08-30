@@ -46,6 +46,14 @@ namespace Deadball.Fighters
         /// <summary>0..1 fill of the lockout, for a HUD or shader tell.</summary>
         public float LockoutProgress => IsLockedOut ? 1f - Lockout.Progress : 0f;
 
+        /// <summary>
+        /// How far the clamp has recovered, 0 just after a missed window to 1 when it is available.
+        /// </summary>
+        /// <remarks>
+        /// The same shape as the motor's dodge readiness, so one HUD icon script drives both.
+        /// </remarks>
+        public float ClaimReady01 => IsLockedOut ? 1f - Lockout.Progress : 1f;
+
         /// <summary>Seconds left on the active catch window, for AI timing and debug readouts.</summary>
         public float WindowRemaining => IsWindowActive ? Window.CurrentTime : 0f;
 
