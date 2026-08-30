@@ -23,6 +23,12 @@ namespace Deadball.HUD
     /// selection when it opens: the cursor is locked away (12), so a pause screen nobody can
     /// navigate would trap the player in the match it just froze.
     /// </para>
+    /// <para>
+    /// It refuses to open once the match is over. The end card owns the screen at that point and
+    /// offers the same way out, so a pause menu on top of it would be two navigable panels
+    /// fighting for one selection - and the pause screen would be stealing focus from the card the
+    /// player is actually trying to answer.
+    /// </para>
     /// </remarks>
     public class PauseMenu : MonoBehaviour
     {
@@ -43,23 +49,54 @@ namespace Deadball.HUD
 
         float _restoreTimeScale = 1f;
 
+        EventBinding<MatchEnded> _matchEnded;
+        EventBinding<RoundStarting> _roundStarting;
+
+        [ShowInInspector, ReadOnly]
+        public bool IsMatchOver { get; private set; }
+
         void Awake()
         {
             if (_root != null) _root.SetActive(false);
         }
 
+        void OnEnable()
+        {
+            // A rematch runs rounds again, so the gate lifts on the next round rather than
+            // needing the scene to reload.
+            _matchEnded = new EventBinding<MatchEnded>(OnMatchEnded);
+            _roundStarting = new EventBinding<RoundStarting>(() => IsMatchOver = false);
+
+            EventBus<MatchEnded>.Register(_matchEnded);
+            EventBus<RoundStarting>.Register(_roundStarting);
+        }
+
         void OnDisable()
         {
+            EventBus<MatchEnded>.Deregister(_matchEnded);
+            EventBus<RoundStarting>.Deregister(_roundStarting);
+
             // A scene change while paused would otherwise leave the next one frozen.
             if (IsPaused) Time.timeScale = _restoreTimeScale;
+        }
+
+        void OnMatchEnded(MatchEnded evt)
+        {
+            IsMatchOver = true;
+
+            // The KO that ends a match and a pause press can land on the same frame. Closing an
+            // already-open pause screen keeps the end card from appearing underneath it.
+            if (IsPaused) Resume();
         }
 
         void Update()
         {
             if (!WasPausePressed()) return;
 
+            // Resume still works, so a pause that somehow survived into the end card can be
+            // dismissed - it is only opening that is refused.
             if (IsPaused) Resume();
-            else Pause();
+            else if (!IsMatchOver) Pause();
         }
 
         static bool WasPausePressed()
@@ -78,7 +115,7 @@ namespace Deadball.HUD
         [Button("Pause"), DisableInEditorMode]
         public void Pause()
         {
-            if (IsPaused) return;
+            if (IsPaused || IsMatchOver) return;
 
             IsPaused = true;
 

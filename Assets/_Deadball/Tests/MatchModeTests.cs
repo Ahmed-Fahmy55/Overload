@@ -116,6 +116,47 @@ namespace Deadball.Tests
         }
 
         [UnityTest]
+        public IEnumerator ThePauseScreenRefusesToOpenOverTheEndCard()
+        {
+            // The end card owns the screen once the match is over and offers the same way out.
+            // A pause screen on top of it is two navigable panels fighting for one selection, and
+            // the pause one wins - so the player cannot answer the card they are looking at.
+            _settings.Mode = MatchMode.LocalVersus;
+
+            yield return LoadArena();
+            yield return WaitForFrames(2);
+
+            var pause = Object.FindFirstObjectByType<PauseMenu>(FindObjectsInactive.Include);
+            Assert.That(pause, Is.Not.Null, "every arena carries a pause menu");
+            Assert.That(pause.IsMatchOver, Is.False, "precondition: the match is still running");
+
+            pause.Pause();
+            Assert.That(pause.IsPaused, Is.True, "it opens normally mid-match");
+            pause.Resume();
+
+            EventBus<MatchEnded>.Raise(new MatchEnded(0));
+            yield return WaitForFrames(2);
+
+            Assert.That(pause.IsMatchOver, Is.True, "the match end has to be noticed");
+
+            pause.Pause();
+            Assert.That(pause.IsPaused, Is.False,
+                "the pause screen must not open once the match is over");
+            Assert.That(Time.timeScale, Is.EqualTo(1f).Within(0.001f),
+                "and a refused pause must not have frozen the game either");
+
+            // A rematch runs rounds again, and the gate has to lift with it.
+            EventBus<RoundStarting>.Raise(new RoundStarting(1, 0f));
+            yield return WaitForFrames(2);
+
+            Assert.That(pause.IsMatchOver, Is.False, "a new round clears the gate");
+
+            pause.Pause();
+            Assert.That(pause.IsPaused, Is.True, "and pausing works again after a rematch");
+            pause.Resume();
+        }
+
+        [UnityTest]
         public IEnumerator CoreCrossesTheDeckInTheReadableWindow()
         {
             yield return LoadArena();
