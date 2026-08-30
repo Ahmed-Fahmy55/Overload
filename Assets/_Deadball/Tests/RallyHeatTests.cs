@@ -341,6 +341,35 @@ namespace Deadball.Tests
         }
 
         [UnityTest]
+        public IEnumerator TheDangerTrianglesFollowWhicheverCoreTheRunnerIsHolding()
+        {
+            // The indicator used to latch onto the first CoreFuse in the scene and keep it for the
+            // whole match. Every core carries its own fuse, so a runner holding the second core was
+            // being measured against the first core's fuse - armed to nobody - and got no warning
+            // at all before it went off in their hands.
+            BallController spare = Object.Instantiate(
+                _core.gameObject, new Vector3(0f, 0f, -8f), Quaternion.identity)
+                .GetComponent<BallController>();
+            yield return null;
+
+            var indicator = _p1.GetComponentInChildren<Deadball.HUD.FuseWarningIndicator>(true);
+            Assert.That(indicator, Is.Not.Null, "the runner should carry a fuse indicator");
+
+            // Deliberately the spare, not the core the fixture usually uses.
+            spare.ResetForRound(_p1.transform.position);
+            yield return WaitUntil(() => spare.HolderSlot == _p1.Slot, 60,
+                "the runner never picked the spare core up");
+
+            float warnStarts = _config.HoldFuseFor(0f) * (1f - _config.FuseWarningFraction);
+            int steps = Mathf.CeilToInt((warnStarts + 0.5f) / Time.fixedDeltaTime);
+
+            yield return WaitUntil(() => indicator.IsShowing, steps,
+                $"no danger triangles after {warnStarts:0.0}s holding the second core");
+
+            Object.DestroyImmediate(spare.gameObject);
+        }
+
+        [UnityTest]
         public IEnumerator ThrowingTheCore_ResetsTheFuseForTheNextCarrier()
         {
             var fuse = Object.FindFirstObjectByType<CoreFuse>();

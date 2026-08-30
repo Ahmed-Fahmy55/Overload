@@ -47,6 +47,7 @@ namespace Deadball.HUD
         public bool IsShowing { get; private set; }
 
         CoreFuse _fuse;
+        BallController _fuseCore;
         float _phase;
 
         void Awake()
@@ -62,16 +63,15 @@ namespace Deadball.HUD
         {
             if (_label == null || _fighter == null) return;
 
-            // Found lazily: runners are spawned from a prefab into a scene that already owns the
-            // core, so there is nothing to wire at author time.
-            if (_fuse == null)
-            {
-                _fuse = Object.FindFirstObjectByType<CoreFuse>();
-                if (_fuse == null) return;
-            }
+            // Looked up per frame from whichever core this runner is actually carrying, rather
+            // than latching onto the first CoreFuse in the scene. Every core has its own fuse, so
+            // once the deck holds more than one, a runner carrying the second core was measured
+            // against the first core's fuse - which is armed to nobody - and the triangles never
+            // appeared for them.
+            ResolveFuse();
+            if (_fuse == null) return;
 
-            bool mine = _fuse.ArmedSlot == _fighter.Slot;
-            IsShowing = mine && _fuse.IsWarning && _fighter.IsInPlay;
+            IsShowing = _fuse.IsWarning && _fighter.IsInPlay;
 
             if (!IsShowing)
             {
@@ -94,6 +94,29 @@ namespace Deadball.HUD
                 _label.transform.rotation = Camera.main.transform.rotation;
         }
 
+        /// <summary>Finds the fuse of the core this runner is carrying, if any.</summary>
+        /// <remarks>
+        /// The component lookup is cached against the core it came from, so carrying the same core
+        /// across frames costs a registry read rather than a GetComponent.
+        /// </remarks>
+        void ResolveFuse()
+        {
+            BallController mine = CoreRegistry.HeldBy(_fighter.Slot);
+
+            if (mine == null)
+            {
+                _fuse = null;
+                _fuseCore = null;
+                return;
+            }
+
+            if (mine == _fuseCore) return;
+
+            _fuseCore = mine;
+            _fuse = mine.GetComponent<CoreFuse>();
+            _warnFraction = -1f;
+        }
+
         /// <summary>
         /// The same threshold the fuse warns at, read once from the core's own config.
         /// </summary>
@@ -105,9 +128,8 @@ namespace Deadball.HUD
         {
             if (_warnFraction > 0f) return _warnFraction;
 
-            BallController core = _fuse.GetComponent<BallController>();
-            _warnFraction = core != null && core.Config != null
-                ? Mathf.Max(0.0001f, core.Config.FuseWarningFraction)
+            _warnFraction = _fuseCore != null && _fuseCore.Config != null
+                ? Mathf.Max(0.0001f, _fuseCore.Config.FuseWarningFraction)
                 : 0.6f;
 
             return _warnFraction;
