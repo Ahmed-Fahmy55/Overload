@@ -1,5 +1,6 @@
 using Deadball.Ball;
 using Deadball.Fighters;
+using TMPro;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,9 +33,24 @@ namespace Deadball.HUD
         [Required, SerializeField] Image _dashFill;
         [Required, SerializeField] Image _claimFill;
 
+        [Tooltip("Tile art, dimmed while the ability is recovering.")]
+        [SerializeField] Image _dashArt;
+        [SerializeField] Image _claimArt;
+
+        [Tooltip("Flashes when the ability comes back.")]
+        [SerializeField] TMP_Text _dashReadyLabel;
+        [SerializeField] TMP_Text _claimReadyLabel;
+
         [Title("Colours")]
         [SerializeField] Color _ready = new(0.16f, 0.85f, 1f);
-        [SerializeField] Color _cooling = new(0.35f, 0.38f, 0.45f);
+        [SerializeField] Color _cooling = new(0.35f, 0.42f, 0.48f);
+
+        [Title("Ready Flash")]
+        [Tooltip("How many times the READY label blinks when the ability returns.")]
+        [MinValue(0), SerializeField] int _flashes = 3;
+        [SuffixLabel("s", true), MinValue(0.05f), SerializeField] float _flashPeriod = 0.6f;
+
+        [PropertyRange(0f, 1f), SerializeField] float _coolingArtAlpha = 0.4f;
 
         [Title("Runtime"), ShowInInspector, ReadOnly]
         public float DashReady { get; private set; } = 1f;
@@ -43,6 +59,10 @@ namespace Deadball.HUD
         public float ClaimReady { get; private set; } = 1f;
 
         Fighter _fighter;
+        float _dashFlash;
+        float _claimFlash;
+        bool _dashWasReady = true;
+        bool _claimWasReady = true;
 
         void LateUpdate()
         {
@@ -61,16 +81,50 @@ namespace Deadball.HUD
             DashReady = _fighter.Motor != null ? _fighter.Motor.DodgeReady01 : 1f;
             ClaimReady = _fighter.Catcher != null ? _fighter.Catcher.ClaimReady01 : 1f;
 
-            Drive(_dashFill, DashReady);
-            Drive(_claimFill, ClaimReady);
+            // The moment of return is the thing worth announcing - a sweep that quietly completes
+            // is easy to miss when your eyes are on the deck.
+            _dashFlash = Recovered(DashReady, ref _dashWasReady) ? _flashes * _flashPeriod
+                : Mathf.Max(0f, _dashFlash - Time.unscaledDeltaTime);
+            _claimFlash = Recovered(ClaimReady, ref _claimWasReady) ? _flashes * _flashPeriod
+                : Mathf.Max(0f, _claimFlash - Time.unscaledDeltaTime);
+
+            Drive(_dashFill, _dashArt, _dashReadyLabel, DashReady, _dashFlash);
+            Drive(_claimFill, _claimArt, _claimReadyLabel, ClaimReady, _claimFlash);
         }
 
-        void Drive(Image fill, float ready01)
+        static bool Recovered(float ready01, ref bool wasReady)
         {
-            if (fill == null) return;
+            bool now = ready01 >= 0.999f;
+            bool crossed = now && !wasReady;
+            wasReady = now;
+            return crossed;
+        }
 
-            fill.fillAmount = Mathf.Clamp01(ready01);
-            fill.color = ready01 >= 0.999f ? _ready : _cooling;
+        void Drive(Image fill, Image art, TMP_Text readyLabel, float ready01, float flashLeft)
+        {
+            bool ready = ready01 >= 0.999f;
+
+            if (fill != null)
+            {
+                fill.fillAmount = Mathf.Clamp01(ready01);
+                fill.color = ready ? _ready : _cooling;
+            }
+
+            if (art != null)
+            {
+                Color c = art.color;
+                c.a = ready ? 1f : _coolingArtAlpha;
+                art.color = c;
+            }
+
+            if (readyLabel == null) return;
+
+            // Blinks for its window, then goes out entirely - it is a transition tell, not a state.
+            bool blinkOn = flashLeft > 0f
+                && Mathf.Repeat(flashLeft, _flashPeriod) > _flashPeriod * 0.5f;
+
+            if (readyLabel.enabled != blinkOn) readyLabel.enabled = blinkOn;
+            readyLabel.color = _ready;
         }
     }
 }
