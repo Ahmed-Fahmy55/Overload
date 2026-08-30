@@ -26,6 +26,14 @@ namespace Deadball.Presentation
         [Tooltip("Sits at the hand anchor, where the core is held.")]
         [Required, SerializeField] ParticleSystem _vfx;
 
+        [Tooltip("Optional aura around the runner themself. Its root particle system drives the whole "
+        + "effect - the pack ships it as several systems and they are played together.")]
+        [SerializeField] ParticleSystem _aura;
+
+        [Title("Aura Ramp", "The runner winds up too, not just their hand")]
+        [MinValue(0f), SerializeField] float _auraMinScale = 0.55f;
+        [MinValue(0f), SerializeField] float _auraMaxScale = 1f;
+
         [Title("Ramp", "How hard the wind-up reads at full charge")]
         [MinValue(0f), SerializeField] float _minRate = 8f;
         [MinValue(0f), SerializeField] float _maxRate = 120f;
@@ -51,8 +59,6 @@ namespace Deadball.Presentation
         {
             Charge01 = Mathf.Clamp01(charge01);
 
-            if (_vfx == null) return;
-
             // Zero covers release, a cancelled wind-up and losing the core, so every way a charge
             // can end puts the plasma out without each needing its own hook.
             if (Charge01 <= 0.001f)
@@ -60,6 +66,10 @@ namespace Deadball.Presentation
                 Stop();
                 return;
             }
+
+            DriveAura();
+
+            if (_vfx == null) return;
 
             if (!_vfx.isPlaying) _vfx.Play();
 
@@ -70,9 +80,33 @@ namespace Deadball.Presentation
             main.startSize = Mathf.Lerp(_minSize, _maxSize, Charge01);
         }
 
+        /// <summary>
+        /// Grows the runner's aura with the wind-up.
+        /// </summary>
+        /// <remarks>
+        /// Scaled at the root rather than ramped per system. The pack's aura is seven particle
+        /// systems whose rates are driven by curves and bursts rather than a single rate value, so
+        /// there is no one number to lerp - but the whole thing is authored around a character, and
+        /// scaling the root reads as the effect gathering.
+        /// </remarks>
+        void DriveAura()
+        {
+            if (_aura == null) return;
+
+            // withChildren: the pack ships the aura as a root plus six sub-emitters, and playing
+            // only the root leaves the sparks and trails dead.
+            if (!_aura.isPlaying) _aura.Play(withChildren: true);
+
+            _aura.transform.localScale =
+                Vector3.one * Mathf.Lerp(_auraMinScale, _auraMaxScale, Charge01);
+        }
+
         void Stop()
         {
             Charge01 = 0f;
+
+            if (_aura != null)
+                _aura.Stop(withChildren: true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             if (_vfx == null) return;
 
