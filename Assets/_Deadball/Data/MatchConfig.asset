@@ -26,7 +26,7 @@ MonoBehaviour:
   _ballGravity: 0.8
   _selfHitImmunity: 0.2
   _catchWindow: 0.2
-  _catchFlashLead: 0.3
+  _catchFlashLead: 0.5
   _perfectClampBand: 0.12
   _perfectClampStun: 0.8
   _lateClampFumble: 1
