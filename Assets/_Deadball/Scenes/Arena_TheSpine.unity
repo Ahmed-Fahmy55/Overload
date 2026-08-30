@@ -21255,7 +21255,7 @@ GameObject:
   - component: {fileID: 1743927110}
   - component: {fileID: 1743927111}
   m_Layer: 5
-  m_Name: CriticalVignette
+  m_Name: LowTimeAlarm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21295,9 +21295,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edfaddf9eb2e8454399ac3327f0826d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Deadball::Deadball.HUD.CriticalHeatVignette
+  _rounds: {fileID: 284664136}
+  _audio: {fileID: 284664144}
   _vignette: {fileID: 1868416859}
   _topBar: {fileID: 1405131574}
   _bottomBar: {fileID: 1901315072}
+  _threshold: 10
   _minAlpha: 0.35
   _maxAlpha: 0.55
   _period: 1.1
@@ -22297,7 +22300,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: cdea939a5a0beb349b764128dfd03a49, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

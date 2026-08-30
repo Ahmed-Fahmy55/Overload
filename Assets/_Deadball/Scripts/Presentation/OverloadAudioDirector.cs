@@ -188,14 +188,21 @@ namespace Deadball.Presentation
                 _humPlayer.SetPitch(Mathf.Lerp(_minHumPitch, _maxHumPitch, Heat01), fadeTime: 0.25f);
         }
 
-        /// <summary>Starts or stops the containment alarm bed at CRITICAL (16.3).</summary>
-        public void SetCritical(bool critical)
+        /// <summary>
+        /// Starts or stops the containment alarm bed.
+        /// </summary>
+        /// <remarks>
+        /// Driven by the round clock running out rather than by core heat. A bed that fills the
+        /// room has to mean something true for both players, and heat is one core's business -
+        /// heat keeps the hum, whose pitch already tracks it.
+        /// </remarks>
+        public void SetAlarm(bool on)
         {
-            if (critical == IsCritical) return;
+            if (on == IsCritical) return;
 
-            IsCritical = critical;
+            IsCritical = on;
 
-            if (critical) Play(_criticalAlarm);
+            if (on) Play(_criticalAlarm);
             else BroAudio.Stop(_criticalAlarm, fadeOut: 0.4f);
         }
 

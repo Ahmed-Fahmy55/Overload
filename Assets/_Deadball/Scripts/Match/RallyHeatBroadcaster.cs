@@ -26,7 +26,7 @@ namespace Deadball.Match
         [Required, SerializeField] RallyHeat _heat;
         [Required, SerializeField] BallController _core;
 
-        [Tooltip("Optional. Drives the hum pitch and the critical alarm bed.")]
+        [Tooltip("Optional. Drives the hum pitch. The alarm bed is the round clock's, not heat's.")]
         [SerializeField] OverloadAudioDirector _audio;
 
         [Tooltip("Optional. Drives the core's colour ramp.")]
@@ -139,7 +139,9 @@ namespace Deadball.Match
                 _core.IsCritical = critical;
             }
 
-            if (_audio != null) _audio.SetCritical(critical);
+            // Audio is deliberately not told. The containment alarm belongs to the round clock
+            // now - see LowTimeAlarm - because a bed that fills the room has to mean something
+            // both players share. Heat still drives the hum's pitch through OnHeatChanged.
             if (_visuals != null) _visuals.SetCritical(critical);
         }
     }

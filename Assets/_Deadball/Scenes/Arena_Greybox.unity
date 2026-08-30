@@ -3168,7 +3168,7 @@ MonoBehaviour:
   _music:
     _entity: {fileID: 11400000, guid: 292cf34677d58414688286b7c7252b59, type: 2}
     ID: 0
-    <DebugObject>k__BackingField: {fileID: 0}
+    <DebugObject>k__BackingField: {fileID: 284664135}
   _heatHum:
     _entity: {fileID: 11400000, guid: 1026ff17c416cab4c9b396bef1039abc, type: 2}
     ID: 0
@@ -3460,7 +3460,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294307816
   m_fontColor: {r: 0.9098039, g: 0.9372549, b: 0.9607843, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -3473,7 +3473,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -4213,7 +4213,7 @@ GameObject:
   - component: {fileID: 429545285}
   - component: {fileID: 429545286}
   m_Layer: 5
-  m_Name: CriticalVignette
+  m_Name: LowTimeAlarm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4253,9 +4253,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edfaddf9eb2e8454399ac3327f0826d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Deadball::Deadball.HUD.CriticalHeatVignette
+  _rounds: {fileID: 284664136}
+  _audio: {fileID: 284664144}
   _vignette: {fileID: 488092901}
   _topBar: {fileID: 1517692703}
   _bottomBar: {fileID: 757572072}
+  _threshold: 10
   _minAlpha: 0.35
   _maxAlpha: 0.55
   _period: 1.1
@@ -4939,7 +4942,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: cdea939a5a0beb349b764128dfd03a49, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5201,7 +5204,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294307816
   m_fontColor: {r: 0.9098039, g: 0.9372549, b: 0.9607843, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -5214,7 +5217,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -6081,8 +6084,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 840, y: 500}
+  m_AnchoredPosition: {x: 0, y: -50.72058}
+  m_SizeDelta: {x: 840, y: 600}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &639424620
 MonoBehaviour:
@@ -13353,7 +13356,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294307816
   m_fontColor: {r: 0.9098039, g: 0.9372549, b: 0.9607843, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -13366,7 +13369,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -16337,7 +16340,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -434}
+  m_AnchoredPosition: {x: 0, y: -470}
   m_SizeDelta: {x: 340, y: 92}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1456705848
@@ -16753,7 +16756,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4289765519
   m_fontColor: {r: 0.56078434, g: 0.627451, b: 0.6901961, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -16766,7 +16769,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
