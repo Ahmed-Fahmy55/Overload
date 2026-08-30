@@ -22,24 +22,24 @@ MonoBehaviour:
   _maxChargeTime: 1.2
   _minThrowSpeed: 25
   _maxThrowSpeed: 50
-  _aimSnapAngle: 37.5
-  _ballGravity: 0.9
-  _selfHitImmunity: 0.3
+  _aimSnapAngle: 15
+  _ballGravity: 0.8
+  _selfHitImmunity: 0.2
   _catchWindow: 0.2
   _catchFlashLead: 0.3
   _perfectClampBand: 0.12
-  _perfectClampStun: 1
-  _lateClampFumble: 0.5
-  _catchLockout: 1
+  _perfectClampStun: 0.8
+  _lateClampFumble: 1
+  _catchLockout: 2
   _holdFuseSeconds: 5
   _holdFuseCriticalSeconds: 2
   _fuseWarningFraction: 0.6
-  _heatPerPerfectClamp: 22
+  _heatPerPerfectClamp: 28
   _heatDecayPerSecond: 25
   _criticalHeat: 80
   _maxHeat: 100
-  _wallBounceRetention: 0.85
-  _bouncesBeforeLoose: 10
+  _wallBounceRetention: 0.9
+  _bouncesBeforeLoose: 6
   _looseSpeedThreshold: 4.5
   _stallFailsafe: 5
   _pickupRadius: 0.9
