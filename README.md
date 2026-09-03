@@ -112,8 +112,7 @@ is third-party.
 
 ## Built with
 
-Synty environment art, MoreMountains TopDownEngine, Heat Complete Modern UI, BroAudio, Odin
+Synty environment art, MoreMountains Feel, Heat Complete Modern UI, BroAudio, Odin
 Inspector, Cinemachine, TransitionsPlus, Hovl Studio and Plasma FX effects, Graphy, and a Sci-Fi game
 sound effects pack.
 
-The design document the build follows is not in this repository.
